@@ -1,0 +1,24 @@
+# Real schedule data and backups (private, never commit)
+yedekler/
+*.json
+
+# Build output (regenerate with: node paketle.js)
+dagitim/
+
+# Test scratch files
+testler/.gecici/
+testler/full_out.txt
+
+# Old versions and drafts
+surumler/
+taslaklar/
+karsilastirma/
+
+# Private notes
+NOTLAR.md
+petek_program_ozet.md
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store

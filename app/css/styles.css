@@ -1,0 +1,372 @@
+:root{
+  --paper:#EFE9DC;
+  --paper-line:#D8CFBA;
+  --ink:#262220;
+  --ink-soft:#5B5449;
+  --burgundy:#7B2D3B;
+  --burgundy-dark:#5E212C;
+  --teal:#2F5D55;
+  --amber:#B98327;
+  --red:#AA3327;
+  --navy:#2C3A4B;
+  --card:#FBF9F3;
+  --shadow:0 1px 2px rgba(38,34,32,.08), 0 4px 12px rgba(38,34,32,.06);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1400px; margin:0 auto; padding:28px 20px 80px;}
+header.top{
+  display:flex; align-items:baseline; justify-content:space-between;
+  border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:6px;
+  flex-wrap:wrap; gap:10px;
+}
+h1{
+  font-family: Georgia, "Iowan Old Style", serif;
+  font-size:28px; margin:0; letter-spacing:.2px;
+}
+h1 small{display:block; font-family:system-ui,sans-serif; font-size:12px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin-top:2px;}
+.savebadge{font-size:12px; color:var(--ink-soft); font-family: ui-monospace, monospace;}
+.savebadge.ok{color:var(--teal);}
+.savebadge.warn{color:var(--amber);}
+
+.weeknav{display:flex; align-items:center; gap:10px; margin:18px 0 12px; flex-wrap:wrap;}
+.weeknav button.nav{
+  border:1px solid var(--ink); background:var(--card); color:var(--ink);
+  border-radius:999px; width:32px; height:32px; cursor:pointer; font-size:16px;
+}
+.weeknav button.nav:hover{background:var(--ink); color:var(--paper);}
+.weeknav .range{font-family: ui-monospace, monospace; font-size:14px; font-weight:600; min-width:150px;}
+/* Hafta kilidi rozeti — kilitli haftada gezinme çubuğunda görünür */
+.weeklock{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--amber); color:#241d0a; font-weight:700; font-size:12px;
+  padding:4px 10px; border-radius:999px; letter-spacing:.02em;
+  box-shadow:var(--shadow); cursor:default;
+}
+.weeklock[hidden]{display:none;}
+/* Sabit (📌) hücre sayacı — sadece gösterge, tıklanmaz */
+.pinbadge{
+  display:inline-flex; align-items:center; gap:5px;
+  background:#EDE7D8; color:var(--ink-soft); border:1px solid var(--paper-line);
+  font-weight:700; font-size:12px; padding:4px 10px; border-radius:999px;
+  cursor:default; font-family:inherit;
+}
+.pinbadge[hidden]{display:none;}
+.toolbar{display:flex; gap:8px; margin-left:auto; flex-wrap:wrap;}
+.tool{
+  border:1px solid var(--paper-line); background:#fff; color:var(--ink);
+  padding:7px 12px; border-radius:7px; cursor:pointer; font-size:12.5px; font-weight:600;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.tool:hover{background:#F3EEE2; border-color:var(--ink-soft);}
+.tool:disabled{opacity:.35; cursor:default;}
+.tool:disabled:hover{background:#fff; border-color:var(--paper-line);}
+
+.spine-legend{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 24px;}
+.spine{
+  display:inline-flex; align-items:center; gap:6px; padding:3px 9px 3px 6px;
+  border-radius:3px; font-size:11.5px; color:#fff; font-weight:600;
+  box-shadow:var(--shadow);
+}
+.spine .dot{width:8px; height:8px; border-radius:2px; background:rgba(255,255,255,.55);}
+
+.panel{background:var(--card); border-radius:10px; box-shadow:var(--shadow); padding:18px 18px 20px; margin-bottom:22px;}
+.panel h2{font-family:Georgia,serif; font-size:17px; margin:0 0 12px; display:flex; align-items:center; gap:8px;}
+.panel h2 .n{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px;
+  background:var(--burgundy); color:#fff; border-radius:50%; font-size:11px; font-family:ui-monospace,monospace;}
+
+table.grid{border-collapse:collapse; font-size:13px;}
+table.grid th, table.grid td{border-bottom:1px solid var(--paper-line); padding:6px 6px; text-align:left; vertical-align:top;}
+/* Sütun başlıkları = çalışanlar */
+table.grid thead th{
+  font-size:12px; color:var(--ink); border-bottom:2px solid var(--ink); padding-bottom:8px;
+  text-align:center; min-width:120px;
+}
+table.grid thead th.corner{min-width:96px; border-bottom:2px solid var(--ink);}
+table.grid thead th .emphead{display:flex; flex-direction:column; align-items:center; gap:2px;}
+table.grid thead th .empname{font-weight:700;}
+table.grid thead th .type{font-weight:400; font-size:10px; color:var(--ink-soft); font-family:ui-monospace,monospace; text-transform:uppercase; letter-spacing:.05em;}
+/* Satır başı = günler */
+td.daycol{white-space:nowrap; font-weight:700; padding-right:12px; font-family:Georgia,serif; font-size:14px; border-right:2px solid var(--ink);}
+td.daycol .daynum{display:block; font-family:ui-monospace,monospace; font-weight:400; font-size:11px; color:var(--ink-soft);}
+td.daycol .dayhours-gear{border:none; background:none; cursor:pointer; font-size:12px; opacity:.35; padding:0 2px; margin-left:4px; vertical-align:middle;}
+td.daycol .dayhours-gear:hover{opacity:1;}
+td.daycol .customhrs{display:block; font-family:ui-monospace,monospace; font-weight:700; font-size:10px; color:var(--burgundy); margin-top:1px;}
+td.cell{cursor:pointer; border-left:1px solid var(--paper-line); text-align:center;}
+
+/* Satır ayrımı — haftalık çizelgede günleri gözle ayırmak için çok hafif zemin.
+   DÜZ ALTERNASYON, istisna yok: bir dönem Pazar'a ayrı (daha koyu) ton verilmişti,
+   Cumartesi de zaten renkli sıraya denk geldiği için alt alta iki renkli satır
+   oluşuyor ve tablo aşağı doğru koyulaşıyormuş gibi duruyordu. 7 satır tek sayı
+   olduğundan düz alternasyon başta ve sonda düz satırla biter — dengeli görünür. */
+#gridTable tbody tr:nth-child(even) > td{ background:#F5F1E6; }
+/* Fare üzerindeyken hücre her iki durumda da belirgin kalsın */
+td.cell:hover{background:#EDE7D8 !important;}
+th.supcol, td.supcell{border-left:2px solid var(--ink); min-width:150px;}
+td.supcell select{
+  width:100%; font-family: ui-monospace, monospace; font-size:12px; padding:4px; border-radius:4px;
+  border:1px solid var(--paper-line); background:#fff;
+}
+td.supcell select.manual{border-color:var(--burgundy); border-width:2px;}
+.supmanual{font-size:9.5px; color:var(--burgundy); margin-top:3px; font-family:ui-monospace,monospace;}
+.supmanual .sup-free{border:none; background:none; color:var(--ink-soft); cursor:pointer; font-size:9.5px; text-decoration:underline; padding:0 0 0 3px;}
+.chip{
+  display:inline-block; padding:2px 6px; border-radius:3px; font-size:11px; color:#fff; font-weight:600;
+  margin-bottom:2px;
+}
+.chip.leave{background:var(--ink-soft);}
+.chip.leaveY{background:var(--amber); color:#241d0a;}
+.chip.leaveB{background:var(--red); color:#fff;}
+.timelabel{font-family: ui-monospace, monospace; font-size:11px; color:var(--ink-soft); display:block; margin-top:2px;}
+.blockchip{display:block; margin-top:2px; font-size:9.5px; font-family:ui-monospace,monospace;
+  border:1px dashed; border-radius:3px; padding:1px 3px; line-height:1.3;}
+.blk-row{display:grid; grid-template-columns:1fr 1fr 1.3fr auto; gap:5px; align-items:center; margin-bottom:5px;}
+.blk-row input, .blk-row select{padding:5px 6px; border-radius:6px; border:1px solid #D6D0C2; font-size:12.5px; width:100%; min-width:0; font-family:inherit;}
+.blk-del{border:1px solid #D6D0C2; background:#fff; border-radius:6px; cursor:pointer; padding:4px 8px; font-size:12px; color:var(--red);}
+.blk-add{border:1px solid var(--paper-line); background:#fff; border-radius:6px; padding:5px 10px; font-size:11.5px; cursor:pointer;}
+.blk-add:hover{background:#F3EEE2;}
+table.grid tfoot td{border-top:2px solid var(--ink); padding-top:8px;}
+td.sumcell{text-align:center; font-size:12px;}
+td.sumcell.over b{color:var(--red);}
+td.sumcell .sumsub{display:block; font-size:9.5px; color:var(--ink-soft); font-family:ui-monospace,monospace;}
+td.sumlabel{font-size:12px;}
+.pinmark{font-size:9px; margin-left:2px;}
+.empty-cell{color:var(--ink-soft); font-size:11px; font-style:italic;}
+
+/* modal */
+.overlay{position:fixed; inset:0; background:rgba(38,34,32,.45); display:none; align-items:center; justify-content:center; z-index:50;}
+.overlay.show{display:flex;}
+.modal{background:#fff; border-radius:12px; width:min(440px, 92vw); padding:22px; box-shadow:0 12px 40px rgba(0,0,0,.25); max-height:92vh; overflow:auto;}
+.modal h3{margin:0 0 4px; font-family:Georgia,serif; font-size:18px;}
+.modal .sub{font-size:12px; color:var(--ink-soft); margin-bottom:16px; font-family:ui-monospace,monospace;}
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:4px;}
+.field select, .field input{
+  width:100%; padding:8px 9px; border-radius:6px; border:1px solid #D6D0C2; font-size:14px; font-family:inherit;
+}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.modal-actions{display:flex; justify-content:space-between; gap:10px; margin-top:18px;}
+button.primary{background:var(--burgundy); color:#fff; border:none; padding:9px 16px; border-radius:7px; font-weight:600; cursor:pointer; font-size:13.5px;}
+button.primary:hover{background:var(--burgundy-dark);}
+button.ghost{background:none; border:1px solid #D6D0C2; padding:9px 16px; border-radius:7px; cursor:pointer; font-size:13.5px; color:var(--ink);}
+button.ghost:hover{background:#F3EEE2;}
+
+/* validation */
+.daytabs{display:flex; gap:4px; flex-wrap:wrap; margin-bottom:14px;}
+.daytabs button{
+  border:1px solid var(--paper-line); background:#fff; padding:6px 12px; border-radius:999px;
+  font-size:12px; cursor:pointer; font-family:ui-monospace,monospace;
+}
+.daytabs button.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+.rule-list{display:flex; flex-direction:column; gap:6px; margin-bottom:16px;}
+.rule{display:flex; align-items:center; gap:10px; font-size:12.5px;}
+.rule input{accent-color:var(--burgundy);}
+.rule .lbl{flex:1;}
+.rule .minmax{font-family:ui-monospace,monospace; color:var(--ink-soft); font-size:11px;}
+
+.timeline{display:flex; flex-direction:column; gap:6px;}
+.trow{display:flex; align-items:center; gap:10px;}
+.trow .zname{width:170px; font-size:12px; font-weight:600; flex-shrink:0;}
+.tbar{flex:1; display:flex; gap:2px; height:22px;}
+.tseg{flex:1; border-radius:2px; position:relative;}
+.tseg.ok{background:var(--teal);}
+.tseg.bad{background:var(--red);}
+.tseg.off{background:#E5E0D2;}
+.tseg:hover::after{
+  content:attr(data-tip); position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+  background:var(--ink); color:#fff; padding:4px 7px; border-radius:5px; font-size:10.5px;
+  white-space:nowrap; font-family:ui-monospace,monospace; z-index:10;
+}
+.viol-list{margin-top:14px; font-size:12.5px;}
+.viol-list .none{color:var(--teal); font-weight:600;}
+.viol-item{color:var(--red); padding:3px 0; border-bottom:1px dashed var(--paper-line);}
+
+.week-warn{margin-top:14px;}
+.week-warn .warn-head{font-size:12.5px; font-weight:700; color:var(--red); margin-bottom:6px;}
+.week-warn .viol-item{color:var(--red);}
+.week-warn .info-head{font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px;}
+.week-warn .info-item{color:var(--ink-soft); padding:3px 0; border-bottom:1px dashed var(--paper-line);}
+.suggest-box{margin-top:8px; font-size:12.5px;}
+.suggest-box .none{color:var(--teal); font-weight:600;}
+.suggest-box .sug-head{font-weight:700; margin-bottom:6px;}
+.suggest-box .sug-item{padding:4px 0; border-bottom:1px dashed var(--paper-line);}
+.suggest-box .sug-fix{color:var(--teal); font-weight:600;}
+.gen-report{margin-top:12px; font-size:12.5px;}
+.gen-report .g-head{font-weight:700; margin-bottom:8px;}
+.sumrow{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;}
+.sumchip{font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:999px; background:#EDE7D8; color:var(--ink-soft);}
+.sumchip.ok{background:var(--teal); color:#fff;}
+.sumchip.bad{background:var(--red); color:#fff;}
+.sumchip.warn{background:var(--amber); color:#241d0a;}
+.g-sec{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--ink-soft); margin:14px 0 6px; border-bottom:1px solid var(--paper-line); padding-bottom:3px;}
+.g-day{margin-bottom:8px;}
+.g-dayname{display:inline-block; font-family:Georgia,serif; font-weight:700; font-size:13px; margin-bottom:3px;}
+.g-item{padding:3px 0 3px 12px; border-left:2px solid var(--paper-line); margin-bottom:3px;}
+.g-win{font-family:ui-monospace,monospace; color:var(--red);}
+.g-who{font-size:11.5px; color:var(--ink-soft);}
+.g-det{margin-top:10px;}
+.g-det summary{cursor:pointer; font-size:12px; font-weight:600; color:var(--ink-soft); padding:4px 0;}
+.g-det summary:hover{color:var(--ink);}
+.gen-report .g-ok{color:var(--teal); font-weight:600;}
+.gen-report .g-gap{color:var(--red); padding:3px 0; border-bottom:1px dashed var(--paper-line);}
+.gen-report .g-note{color:var(--ink-soft); padding:3px 0 3px 10px;}
+.zonegrid{display:grid; grid-template-columns:1fr 1fr; gap:4px 10px; max-height:190px; overflow-y:auto;
+  border:1px solid #E5E0D2; border-radius:6px; padding:8px;}
+.zonegrid label{display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink); margin:0; cursor:pointer;}
+.zonegrid input{width:auto; accent-color:var(--burgundy);}
+table.grid td.pcell{font-size:12px; vertical-align:middle;}
+.ptag{display:inline-block; font-size:10px; padding:1px 5px; border-radius:3px; background:#EDE7D8; color:var(--ink-soft); margin:1px 2px 1px 0; font-family:ui-monospace,monospace;}
+.ptag.sup{background:var(--burgundy); color:#fff;}
+.ptag.oncall{background:var(--amber); color:#241d0a;}
+
+/* Borç / Alacak sayacı */
+.baltag{font-family:ui-monospace,monospace; font-weight:700; padding:2px 9px; border-radius:4px; font-size:12.5px; display:inline-block;}
+.baltag.pos{background:#E1EDE8; color:var(--teal);}
+.baltag.neg{background:#F5E2DC; color:var(--red);}
+.baltag.zero{background:#EDE7D8; color:var(--ink-soft);}
+.baltxt.pos{color:var(--teal);}
+.baltxt.neg{color:var(--red);}
+.baltxt.zero{color:var(--ink-soft);}
+.sumsub.balbadge{display:block; margin-top:1px;}
+.ledger-hist-row{display:flex; align-items:center; gap:10px; padding:6px 2px; border-bottom:1px dashed var(--paper-line); font-size:12.5px; flex-wrap:wrap;}
+.ledger-hist-row .lh-date{font-family:ui-monospace,monospace; color:var(--ink-soft); min-width:82px;}
+.ledger-hist-row .lh-name{font-weight:600; min-width:120px;}
+.ledger-hist-row .lh-hours{font-family:ui-monospace,monospace; font-weight:700; min-width:56px;}
+.ledger-hist-row .lh-note{color:var(--ink-soft); flex:1; min-width:120px;}
+.pedit{border:1px solid var(--paper-line); background:#fff; border-radius:6px; padding:3px 10px; font-size:11.5px; cursor:pointer;}
+.ordcell{white-space:nowrap; text-align:center;}
+.pmove{border:1px solid var(--paper-line); background:#fff; border-radius:5px; padding:1px 5px; font-size:11px; cursor:pointer; line-height:1.2;}
+.pmove:disabled{opacity:.3; cursor:default;}
+.pmove:not(:disabled):hover{background:var(--paper-line);}
+.pedit:hover{background:var(--ink); color:#fff; border-color:var(--ink);}
+.hint{font-size:11.5px; color:var(--ink-soft); line-height:1.5; margin-top:6px;}
+footer.note{font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:30px; line-height:1.6;}
+
+/* =====================================================================
+   TABLET VE TELEFON UYUMU
+   Geniş çizelge tabloları zaten kendi içinde yana kaydırılabiliyor
+   (overflow-x:auto). Buradaki kurallar sayfanın GERİ KALANININ dar
+   ekranda taşmamasını ve dokunmatikte rahat kullanılmasını sağlar.
+===================================================================== */
+
+/* Dokunmatik cihazlarda tabloların kaydırması akıcı olsun */
+.panel > div[style*="overflow-x"]{ -webkit-overflow-scrolling: touch; }
+
+/* ---------- TABLET (900 piksel ve altı) ---------- */
+@media (max-width: 900px){
+  .wrap{ padding:18px 12px 60px; }
+  h1{ font-size:22px; }
+  .panel{ padding:14px 12px 16px; }
+  .panel h2{ font-size:15px; }
+
+  /* Araç çubuğu sola yaslansın, butonlar alt alta sarabilsin */
+  .toolbar{ margin-left:0; width:100%; }
+  .weeknav{ gap:8px; }
+
+  /* Modal pencereler ekrana yayılsın */
+  .modal{ width:min(560px, 94vw); padding:18px; }
+
+  /* Zaman çizelgesindeki bölüm adı sütunu daralsın */
+  .trow .zname{ width:120px; font-size:11.5px; }
+}
+
+/* ---------- TELEFON (560 piksel ve altı) ---------- */
+@media (max-width: 560px){
+  .wrap{ padding:14px 10px 50px; }
+  h1{ font-size:19px; }
+  h1 small{ font-size:10.5px; letter-spacing:.08em; }
+  header.top{ padding-bottom:10px; }
+
+  /* Butonlar parmakla basılabilecek kadar büyük olsun */
+  .tool{ padding:9px 12px; font-size:13px; }
+  .weeknav button.nav{ width:38px; height:38px; font-size:18px; }
+  .weeknav .range{ font-size:13px; min-width:0; }
+
+  /* Yan yana duran iki alan alt alta insin */
+  .row2{ grid-template-columns:1fr; }
+  .zonegrid{ grid-template-columns:1fr; max-height:240px; }
+
+  /* Görev değişimi satırları */
+  .blk-row{ grid-template-columns:1fr 1fr auto; }
+  .blk-row .b-zone, .blk-row .pb-zone{ grid-column:1 / -1; }
+
+  /* Zaman çizelgesi: bölüm adı üstte, çubuk altta */
+  .trow{ flex-direction:column; align-items:stretch; gap:3px; }
+  .trow .zname{ width:auto; }
+  .tbar{ height:26px; }
+  /* Dar ekranda ipucu balonu ekran dışına taşmasın */
+  .tseg:hover::after{ display:none; }
+
+  /* Borç/alacak hareket satırları */
+  .ledger-hist-row{ gap:6px; font-size:12px; }
+  .ledger-hist-row .lh-name{ min-width:0; }
+  .ledger-hist-row .lh-note{ flex-basis:100%; }
+
+  .modal{ width:96vw; padding:16px; max-height:94vh; }
+  .modal-actions{ flex-wrap:wrap; }
+  .modal-actions button{ flex:1; min-width:120px; }
+}
+
+/* iPhone/iPad'de bir alana dokununca sayfanın kendiliğinden yakınlaşmasını
+   engeller — yazı boyutu 16 pikselin altındaysa Safari otomatik zoom yapar. */
+@media (max-width: 900px){
+  .field select, .field input,
+  .blk-row input, .blk-row select,
+  td.supcell select{ font-size:16px; }
+}
+
+/* =====================================================================
+   SÜRÜKLE-BIRAK (vardiya kopyalama)
+===================================================================== */
+td.cell[draggable="true"]{ cursor: grab; }
+td.cell[draggable="true"]:active{ cursor: grabbing; }
+
+/* Sürüklenen hücre soluklaşır */
+td.cell.suruk-kaynak{ opacity:.4; }
+
+/* Üzerine bırakılabilecek hücre belirginleşir */
+td.cell.suruk-hedef{
+  background:#E1EDE8 !important;
+  outline:2px dashed var(--teal);
+  outline-offset:-3px;
+}
+
+/* Sağ altta kısa süreli bilgi kutusu */
+.toast{
+  position:fixed; right:18px; bottom:18px; z-index:200;
+  display:none; align-items:center; gap:12px;
+  background:var(--ink); color:#fff;
+  padding:11px 14px; border-radius:9px;
+  font-size:12.5px; line-height:1.4; max-width:min(440px, 92vw);
+  box-shadow:0 8px 28px rgba(0,0,0,.3);
+}
+.toast.show{ display:flex; }
+.toast-btn{
+  flex-shrink:0; border:1px solid rgba(255,255,255,.45); background:none;
+  color:#fff; border-radius:6px; padding:5px 11px;
+  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+}
+.toast-btn:hover{ background:rgba(255,255,255,.16); }
+
+@media (max-width: 560px){
+  .toast{ left:10px; right:10px; bottom:10px; max-width:none; }
+}
+
+/* Yıllık izin sayacı */
+.izintag{font-family:ui-monospace,monospace; font-weight:700; padding:2px 9px;
+  border-radius:4px; font-size:12.5px; display:inline-block;}
+.izintag.var{background:#F5EEDC; color:var(--amber);}
+.izintag.yok{background:#EDE7D8; color:var(--ink-soft);}
+.izintag.asim{background:#F5E2DC; color:var(--red);}
+
+/* Ayrılan personel bölümü (3. panel, ana listenin altında katlanmış) */
+.ayrilan-det{margin-top:14px; border-top:1px dashed var(--paper-line); padding-top:10px;}
+.ayrilan-det summary{cursor:pointer; font-size:12.5px; font-weight:700; color:var(--ink-soft); padding:4px 0;}
+.ayrilan-det summary:hover{color:var(--ink);}
+.ayrilan-det table.grid{opacity:.75;}

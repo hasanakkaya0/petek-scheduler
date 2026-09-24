@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Petek Çalışma Programı v1</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>Petek Çalışma Programı <span style="font-size:14px;color:var(--burgundy);font-weight:700;vertical-align:middle;">v1</span><small>Haftalık personel planlama — sürüm 1.0</small></h1>
+    <div style="text-align:right;">
+      <span class="savebadge" id="saveBadge">—</span>
+      <div class="ver" id="verBadge"></div>
+    </div>
+  </header>
+
+  <div class="weeknav">
+    <button class="nav" id="prevWeek">‹</button>
+    <span class="range" id="weekRange">—</span>
+    <button class="nav" id="nextWeek">›</button>
+    <span class="weeklock" id="weekLockBadge" hidden>🔒 Kilitli</span>
+    <span class="pinbadge" id="pinBadge" hidden>📌 0 sabit</span>
+    <div class="toolbar">
+      <button class="tool" id="btnUndo" disabled title="Geri alınacak işlem yok">↶ Geri al</button>
+      <button class="tool" id="btnLock">🔒 Haftayı kilitle</button>
+      <button class="tool" id="btnGenerate" style="border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">✨ Haftayı otomatik oluştur</button>
+      <button class="tool" id="btnPng">🖼 Görsel indir</button>
+      <button class="tool" id="btnBackup">⤓ Yedek al (JSON)</button>
+      <button class="tool" id="btnRestore">⤒ Yedekten yükle</button>
+      <button class="tool" id="btnReset" style="border-color:var(--red); color:var(--red);">🗑 Haftayı sıfırla</button>
+      <input type="file" id="fileRestore" accept="application/json,.json" hidden />
+    </div>
+  </div>
+
+  <div class="spine-legend" id="spineLegend"></div>
+
+  <div class="panel">
+    <h2><span class="n">1</span>Haftalık çizelge</h2>
+    <div style="overflow-x:auto;">
+      <table class="grid" id="gridTable"></table>
+    </div>
+    <div class="gen-report" id="genReport"></div>
+    <div class="hint">Haftayı doldurmak için <b>✨ Haftayı otomatik oluştur</b>'u kullan — kişi ayarlarındaki saat, izin ve yetkilere göre çizelgeyi kurar. Tek bir günü değiştirmek için o hücreye tıkla — elle değiştirdiğin gün <b>sabit 📌</b> olur ve otomatik oluşturma ona dokunmaz. Programın o günü yeniden düzenlemesini istersen pencerede <b>Serbest</b> seç, <b>Bir vardiyayı başka bir hücreye kopyalamak için sürükleyip bırak</b> — sabit bir vardiyayı sürüklersen hedefe de sabit gider. En sağdaki sütun = akşam sorumlusu.</div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span>Kapsama kontrolü</h2>
+    <div class="daytabs" id="dayTabs"></div>
+    <div class="rule-list" id="ruleList"></div>
+    <div class="timeline" id="timeline"></div>
+    <div class="viol-list" id="violList"></div>
+    <button class="tool" id="btnSuggest" style="margin-top:12px;">🔎 Bu gün için eksik öner</button>
+    <div class="suggest-box" id="suggestBox"></div>
+    <div class="week-warn" id="weekWarn"></div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span>Personel ve yetkiler</h2>
+    <div class="hint" style="margin-top:0; margin-bottom:10px;">
+      Buradan personel ekleyip çıkarabilir, kimin hangi bölüme bakabildiğini, saatlerini ve akşam
+      sorumlusu yetkisini değiştirebilirsin. <b>Otomatik liste doğrudan bu ayarlara göre çalışır</b> —
+      kod değiştirmeye gerek yok.
+    </div>
+    <div style="overflow-x:auto;"><table class="grid" id="peopleTable"></table></div>
+    <div id="ayrilanKutu"></div>
+    <button class="tool" id="btnAddPerson" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Personel ekle</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">4</span>Bölümler</h2>
+    <div class="hint" style="margin-top:0; margin-bottom:10px;">
+      Dükkândaki reyon/görev listesi. Yeni bölüm açılırsa buradan eklenir; rengi çizelgede ve
+      indirilen görselde kullanılır.
+    </div>
+    <div style="overflow-x:auto;"><table class="grid" id="zoneTable"></table></div>
+    <button class="tool" id="btnAddZone" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Bölüm ekle</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">5</span>Kapsama kuralları</h2>
+    <div class="hint" style="margin-top:0; margin-bottom:10px;">
+      "Hangi bölümde aynı anda en az/en fazla kaç kişi olmalı" kuralları. Otomatik liste ve
+      doğrulama doğrudan bunlara göre çalışır.
+    </div>
+    <div style="overflow-x:auto;"><table class="grid" id="ruleTable"></table></div>
+    <button class="tool" id="btnAddRule" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Kural ekle</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">6</span>Borç / Alacak Sayacı</h2>
+    <div class="hint" style="margin-top:0; margin-bottom:10px;">
+      Her personelin normalin üstünde/altında çalıştığı saatler burada otomatik birikir.
+      <b>Pozitif (+)</b> bakiye şirketin personele borçlu olduğu saat, <b>negatif (−)</b> bakiye
+      personelin şirkete borçlu olduğu saattir. Pazar telafisi (dükkanın Pazar kısa açık olmasından
+      kaynaklanan azalma) nötr sayılır — bakiyeye yazılmaz. Kişisel erken çıkışlar ve her türlü
+      planlı/plansız fazla ya da eksik çalışma otomatik işlenir. Kayıtlı her hafta ve elle düzeltmeler
+      üzerinden canlı hesaplanır; ayrıca elle düzeltme (+/− saat) ekleyebilirsin.
+    </div>
+    <div style="overflow-x:auto;"><table class="grid" id="ledgerTable"></table></div>
+    <div class="hint" style="margin-top:16px; margin-bottom:6px; font-weight:600;">Hareket geçmişi (manuel düzeltmeler)</div>
+    <div id="ledgerHistory"></div>
+    <button class="tool" id="btnAddLedger" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Manuel düzeltme ekle</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">7</span>Yıllık İzin Sayacı</h2>
+    <div class="hint" style="margin-top:0; margin-bottom:10px;">
+      Her personelin bir takvim yılında (1 Ocak – 31 Aralık) kaç gün
+      <b>yıllık izin</b> kullandığını gösterir. Çizelgede "Y. İzin" olarak
+      işaretlenen günler sayılır. Yıl değiştiğinde sayaç yeni yıl için sıfırdan
+      başlar; eski yıllara aşağıdaki listeden bakabilirsin.
+    </div>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+      <label style="font-size:12px; font-weight:600; color:var(--ink-soft);">Yıl:</label>
+      <select id="izinYilSec" style="padding:6px 9px; border-radius:6px; border:1px solid #D6D0C2; font-size:13px; font-family:inherit;"></select>
+      <span id="izinYilOzet" style="font-size:11.5px; color:var(--ink-soft); font-family:ui-monospace,monospace;"></span>
+    </div>
+    <div style="overflow-x:auto;"><table class="grid" id="yillikIzinTable"></table></div>
+  </div>
+
+  <footer class="note">
+    <span id="footNote">—</span>
+  </footer>
+</div>
+
+<!-- Tek hücre düzenleyici -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">—</h3>
+    <div class="sub" id="modalSub">—</div>
+
+    <div class="field">
+      <label>Durum</label>
+      <select id="fLeave">
+        <option value="NONE">Çalışıyor</option>
+        <option value="IZINLI">İzinli (haftalık)</option>
+        <option value="YILLIK">Y. İzin (yıllık)</option>
+        <option value="BORC">Borç izni (saatleri borca yazılır)</option>
+      </select>
+    </div>
+
+    <div class="row2" id="timeFields">
+      <div class="field"><label>Başlangıç</label><input type="time" id="fStart" /></div>
+      <div class="field"><label>Bitiş</label><input type="time" id="fEnd" /></div>
+    </div>
+
+    <div class="field" id="zoneField">
+      <label>Görev (bölüm)</label>
+      <select id="fZone"></select>
+    </div>
+
+    <div class="field" id="blockField">
+      <label>Saat bazlı görev değişimi</label>
+      <div id="blkList"></div>
+      <button class="blk-add" id="blkAdd">+ görev değişimi ekle</button>
+      <div class="hint">Vardiyayı bölmeden, belirli saatlerde başka bir bölüme geçiş (ör. 19:00–21:00 Kasa).</div>
+    </div>
+
+    <div class="field" id="lockField">
+      <label>Bu gün için sabit mi?</label>
+      <select id="fLock">
+        <option value="1">Sabit 📌 — otomatik oluşturma bu günü değiştirmesin (varsayılan)</option>
+        <option value="0">Serbest — otomatik oluşturma yeniden düzenleyebilir</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="ghost" id="btnCancel">Vazgeç</button>
+      <button class="primary" id="btnSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Personel düzenleme -->
+<div class="overlay" id="personOverlay">
+  <div class="modal">
+    <h3 id="personTitle">Personel</h3>
+    <div class="sub">Bu ayarlar otomatik listeyi doğrudan etkiler</div>
+
+    <div class="field"><label>Ad</label><input type="text" id="pName" placeholder="ör. Ayşe Hanım" /></div>
+
+    <div class="field">
+      <label>Bu kişi haftalık çizelgede yer alsın mı?</label>
+      <select id="pHasRow">
+        <option value="1">Evet — çizelgede kendi sütunu olsun (normal personel)</option>
+        <option value="0">Hayır — sadece akşam sorumlusu havuzunda görünsün (yönetici/patron)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Çalışma şekli</label>
+      <select id="pType">
+        <option>Tam zamanlı</option>
+        <option>Part-time</option>
+        <option>Part-time (ihtiyaç dahilinde)</option>
+        <option>Yönetici</option>
+        <option>Patron</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Günlük çalışma saati</label>
+      <input type="number" id="pHours" min="1" max="14" step="0.5" placeholder="ör. 10 — boş bırakırsan sabit kota yok" />
+    </div>
+
+    <div class="field">
+      <label>Ana görevleri (asıl baktığı bölümler)</label>
+      <div class="zonegrid" id="pPrimary"></div>
+    </div>
+
+    <div class="field">
+      <label>Yedek görevleri (gerekirse bakabildiği bölümler)</label>
+      <div class="zonegrid" id="pBackup"></div>
+    </div>
+
+    <div class="field">
+      <label>Akşam sorumlusu olabilir mi?</label>
+      <select id="pSup"><option value="0">Hayır</option><option value="1">Evet</option></select>
+    </div>
+
+    <div class="field">
+      <label>Sadece ihtiyaç halinde mi çağrılıyor?</label>
+      <select id="pOnCall">
+        <option value="0">Hayır — düzenli çalışıyor, otomatik listeye dahil</option>
+        <option value="1">Evet — otomatik liste onu atamaz, son çare olarak önerir</option>
+      </select>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Haftada en fazla geç çıkış</label>
+        <input type="number" id="pMaxClose" min="0" max="7" placeholder="boş = sınır yok" />
+      </div>
+      <div class="field">
+        <label>Haftada kaç gün kapanışa kalmasın</label>
+        <input type="number" id="pEarly" min="0" max="7" placeholder="0" />
+      </div>
+    </div>
+    <div class="hint" style="margin-top:-6px;">Bu iki alan da <b>kapanış vardiyasını</b> sınırlar —
+      <b>saatleri kısaltmaz</b>, herkes günlük kotasını tam çalışır.
+      Örnek: 6 gün çalışan birine "3 gün kapanışa kalmasın" yazarsan en fazla 3 gün kapanışçı olur.
+      İkisini de doldurursan daha sıkı olan uygulanır.</div>
+
+    <div class="field">
+      <label>Haftalık izin günü sayısı</label>
+      <input type="number" id="pOffDays" min="0" max="6" placeholder="boş = otomatik (tam zamanlı 1, part-time 2)" />
+      <div class="hint">Kaç gün izin yapsın (kaç gün çalışsın onu belirler). Ör. 6 gün çalışsın istiyorsan
+        <b>1</b> yaz. 0 yazarsan hiç izin günü verilmez (elle girilen izinler yine geçerli).</div>
+    </div>
+
+    <div class="field">
+      <label>Haftalık toplam saat üst sınırı</label>
+      <input type="number" id="pWeeklyMax" min="1" max="80" placeholder="boş = sınır yok (ör. 60)" />
+    </div>
+
+    <div class="field">
+      <label>Yıllık izin hakkı (yılda kaç gün)</label>
+      <input type="number" id="pIzinHakki" min="0" max="60" placeholder="boş = hak takip edilmiyor, sadece kullanılan sayılır" />
+      <div class="hint">Doldurursan 7. paneldeki Yıllık İzin Sayacı "kaç gün kaldı"yı da gösterir.
+        Boş bırakırsan yalnızca o yıl kullanılan gün sayılır (eskisi gibi).</div>
+    </div>
+
+    <div class="field">
+      <label>İzin günü tercihi</label>
+      <select id="pPrefOff">
+        <option value="">Fark etmez</option>
+        <option value="weekend">Hafta sonuna denk gelsin</option>
+        <option value="weekend-alt">Dönüşümlü hafta sonu (bir hafta Cmt, bir hafta Paz)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Tercih edilen izin günü</label>
+      <select id="pPrefOffDay">
+        <option value="">Fark etmez</option>
+        <option value="0">Pazartesi</option>
+        <option value="1">Salı</option>
+        <option value="2">Çarşamba</option>
+        <option value="3">Perşembe</option>
+        <option value="4">Cuma</option>
+        <option value="5">Cumartesi</option>
+        <option value="6">Pazar</option>
+      </select>
+      <div class="hint">Belirli bir günü tercih ediyorsa (ör. biri Cuma, biri Pazar). Soft — kapsama
+        elverdiğinde uygulanır. "İzin günü tercihi" ile birlikte kullanılmaz; biri yeterli.</div>
+    </div>
+
+    <div class="field">
+      <label>Kapanış grubu</label>
+      <input type="text" id="pCloseGroup" maxlength="16" placeholder="boş = grup yok (ör. A)" />
+      <div class="hint">Aynı grup adını verdiğin kişiler haftada TEK bir hafta içi günü
+        BİRLİKTE kapanış yapar, başka gün kapanış yapmaz. (Ör. birlikte kapanacak iki kişiye de "A" yaz.)</div>
+    </div>
+
+    <div class="field">
+      <label>Gün içi görev kaydırmaları (her gün geçerli)</label>
+      <div id="pBlocks"></div>
+      <button class="blk-add" id="pBlkAdd">+ kaydırma ekle</button>
+      <div class="hint">Eski listelerdeki gibi: vardiya aynı kalır ama belirli saatlerde başka bölüme geçer
+        (ör. Kişi K 18:00–21:00 Fotokopi). Otomatik liste bunu her gün uygular; tek bir günde
+        değiştirmek istersen çizelgede o hücreye tıklayıp elle düzenleyebilirsin.</div>
+    </div>
+
+    <div class="modal-actions" style="flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="ghost" id="pDelete" style="color:var(--red); border-color:var(--red);">Kadrodan çıkar</button>
+        <button class="ghost" id="pPurge" style="color:#fff; background:var(--red); border-color:var(--red);">Tamamen sil</button>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="ghost" id="pCancel">Vazgeç</button>
+        <button class="primary" id="pSave">Kaydet</button>
+      </div>
+    </div>
+    <div class="hint" id="silAciklama">
+      <b>Kadrodan çıkar</b> — işten ayrılanlar için. Bu haftadan itibaren çizelgede
+      görünmez, <b>geçmiş haftalardaki vardiyaları ve Borç/Alacak kayıtları durur</b>.<br>
+      <b>Tamamen sil</b> — kişiyi <b>geçmiş, bugün ve gelecek bütün haftalardan</b> siler.
+      Geri alınamaz; yalnızca hiç çalışmamış/yanlış eklenmiş kişiler için kullan.
+    </div>
+  </div>
+</div>
+
+<!-- Bölüm düzenleme -->
+<div class="overlay" id="zoneOverlay">
+  <div class="modal">
+    <h3 id="zoneTitle">Bölüm</h3>
+    <div class="sub">Dükkândaki reyon / görev alanı</div>
+    <div class="field"><label>Bölüm adı</label><input type="text" id="zLabel" placeholder="ör. Hediyelik" /></div>
+    <div class="field"><label>Rengi</label><input type="color" id="zColor" value="#7B2D3B" style="height:42px; padding:3px;" /></div>
+    <div class="modal-actions">
+      <button class="ghost" id="zDelete" style="color:var(--red); border-color:var(--red);">Sil</button>
+      <div style="display:flex; gap:10px;">
+        <button class="ghost" id="zCancel">Vazgeç</button>
+        <button class="primary" id="zSave">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Kural düzenleme -->
+<div class="overlay" id="ruleOverlay">
+  <div class="modal">
+    <h3 id="ruleTitle">Kapsama kuralı</h3>
+    <div class="sub">Aynı anda kaç kişi bulunmalı?</div>
+
+    <div class="field"><label>Kural adı</label><input type="text" id="rLabel" placeholder="ör. Kasa" /></div>
+
+    <div class="field">
+      <label>Hangi bölümler için? (birden fazla seçersen birlikte sayılır)</label>
+      <div class="zonegrid" id="rZones"></div>
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>En az kaç kişi</label><input type="number" id="rMin" min="0" max="10" value="1" /></div>
+      <div class="field"><label>En fazla kaç kişi</label><input type="number" id="rMax" min="1" max="10" placeholder="boş = sınır yok" /></div>
+    </div>
+
+    <div class="field">
+      <label>Bu kural hangi saatler arasında geçerli?</label>
+      <div class="row2">
+        <input type="time" id="rFrom" />
+        <input type="time" id="rTo" />
+      </div>
+      <div class="hint">Boş bırakırsan dükkânın tüm açık saatlerinde geçerli olur.
+        Örnek: Fotokopi'ye <b>11:00</b> yazarsan sabah 09:00–11:00 arası boş kalması
+        <b>açık sayılmaz</b> — sadece bilgi olarak gösterilir ve otomatik oluşturma
+        o saati doldurmak için uğraşmaz.</div>
+    </div>
+
+    <div class="field">
+      <label>Bu kural asla ihlal edilmemeli mi?</label>
+      <select id="rCritical">
+        <option value="0">Normal — boşluk kalırsa raporlanır</option>
+        <option value="1">Kritik — sistem boşluk bırakmamak için başka bölümden personel çeker</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Bu işi yapan kişi bölümlerin tamamına bakabilmeli mi?</label>
+      <select id="rFullBlock">
+        <option value="0">Hayır — bölümlerden birine bakabilmesi yeterli</option>
+        <option value="1">Evet — seçili bölümlerin hepsine bakabilmeli (kafe bloğu gibi)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Durum</label>
+      <select id="rEnabled"><option value="1">Açık</option><option value="0">Kapalı</option></select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="ghost" id="rDelete" style="color:var(--red); border-color:var(--red);">Sil</button>
+      <div style="display:flex; gap:10px;">
+        <button class="ghost" id="rCancel">Vazgeç</button>
+        <button class="primary" id="rSave">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Borç/Alacak — manuel hareket ekleme -->
+<div class="overlay" id="ledgerOverlay">
+  <div class="modal">
+    <h3>Manuel düzeltme</h3>
+    <div class="sub">Personelin borç/alacak bakiyesine elle saat ekle/çıkar</div>
+
+    <div class="field">
+      <label>Personel</label>
+      <select id="lgName"></select>
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>Tarih</label><input type="date" id="lgDate" /></div>
+      <div class="field"><label>Saat</label><input type="number" id="lgHours" step="0.5" placeholder="ör. 2 veya -1.5" /></div>
+    </div>
+    <div class="hint" style="margin-top:0;">Pozitif saat = şirket personele borçlanır (alacaklı personel). Negatif saat = personel şirkete borçlanır.</div>
+
+    <div class="field"><label>Not</label><input type="text" id="lgNote" placeholder="ör. bayram fazla mesaisi, mahsup vb." /></div>
+
+    <div class="modal-actions">
+      <button class="ghost" id="lgCancel">Vazgeç</button>
+      <button class="primary" id="lgSave">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Yardımcı fonksiyonlar (tarih/saat hesapları) — ana koddan ÖNCE yüklenmeli -->
+<script src="js/utils.js"></script>
+
+<!-- Veri kaydetme / yükleme -->
+<script src="js/storage.js"></script>
+
+<!-- Görsel indirme (PNG) -->
+<script src="js/export-png.js"></script>
+
+<!-- Borç / Alacak Sayacı (6 numaralı panel) -->
+<script src="js/ledger.js"></script>
+
+<!-- Yıllık İzin Sayacı (7 numaralı panel) -->
+<script src="js/yillik-izin.js"></script>
+
+<!-- Otomatik haftalık liste oluşturucu ("Haftayı otomatik oluştur" butonu) -->
+<script src="js/generator.js"></script>
+
+<!-- Ayar panelleri: Personel (3) / Bölümler (4) / Kapsama kuralları (5) -->
+<script src="js/settings-panels.js"></script>
+
+<!-- Ekran çizimi: üst gezinme + haftalık çizelge tablosu -->
+<script src="js/render.js"></script>
+
+<!-- Düzenleme pencereleri: tek hücre + haftalık şablon -->
+<script src="js/modals.js"></script>
+
+<!-- Kapsama doğrulama ve öneriler (2 numaralı panel) -->
+<script src="js/validation.js"></script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Veri modeli — Faz 1-3'teki Python modelinin JS karşılığı
+--------------------------------------------------------------------- */
+const DEFAULT_ZONES = [
+  {id:'KASA', label:'Kasa', color:'#7B2D3B'},
+  {id:'KIRTASIYE', label:'Kırtasiye', color:'#2C3A4B'},
+  {id:'CANTA', label:'Çanta', color:'#5B6470'},
+  {id:'FOTOKOPI', label:'Fotokopi', color:'#B98327'},
+  {id:'DERS_KITAPLARI', label:'Ders Kitapları', color:'#2F5D55'},
+  {id:'DEPO', label:'Depo', color:'#6B4A34'},
+  {id:'MUHASEBE', label:'Muhasebe', color:'#5C3A5C'},
+  {id:'SEVKIYAT', label:'Sevkiyat', color:'#46707A'},
+  {id:'OKUMA_KITABI', label:'Okuma Kitabı', color:'#A2472F'},
+  {id:'KAFE', label:'Kafe', color:'#7A5230'},
+  {id:'SANATSAL', label:'Sanatsal', color:'#6A4E8C'},
+  {id:'OYUNCAK', label:'Oyuncak', color:'#C1584A'},
+];
+let ZONES = DEFAULT_ZONES.map(z => Object.assign({}, z));
+let ZONE_MAP = {};
+function rebuildZones(){ ZONE_MAP = Object.fromEntries(ZONES.map(z => [z.id, z])); }
+rebuildZones();
+
+// kurallar.md madde 3 + 5 — kadro (satırı olanlar)
+// ---------------------------------------------------------------------
+// PERSONEL — artık kodda sabit değil, arayüzden düzenlenebilir ve kaydedilir.
+// Aşağıdakiler sadece ilk açılıştaki başlangıç değerleri.
+//   hasRow : haftalık çizelgede kendi satırı/sütunu olsun mu (yöneticilerde false)
+//   sup    : akşam sorumlusu olabilir mi
+//   hours  : günlük saat kotası (boş = sabit kota yok)
+//   maxClose : haftada en fazla kaç gün geç çıkabilir (boş = sınır yok)
+//   earlyDays: haftada kaç gün KAPANIŞA KALMASIN (saat kısaltmaz)
+//   prefOff  : 'weekend' ise izni hafta sonuna denk getirmeye çalışılır
+//   onCall   : ihtiyaç halinde çağrılır — otomatik listede atanmaz
+// ---------------------------------------------------------------------
+const DEFAULT_PEOPLE = [
+  // v1: boş başlar — personeli "Personel" panelinden ekleyin.
+];
+
+let PEOPLE = DEFAULT_PEOPLE.map(p => Object.assign({}, p));
+let ROSTER = [], MANAGERS = [], ALL_PEOPLE = [], SUP_POOL = [];
+/* ---------------------------------------------------------------------
+   KADRO GEÇERLİLİK TARİHİ
+   Personel ekleme/çıkarma, yapıldığı HAFTADAN İTİBAREN geçerli olur.
+   Geçmiş haftalar olduğu gibi kalır — biten bir haftanın çizelgesi, sonradan
+   işe giren biri yüzünden değişmez; ayrılan biri de geçmişten silinmez.
+
+     startWeek : bu Pazartesi'den itibaren kadroda  (boş = hep vardı)
+     endWeek   : bu Pazartesi'ye kadar kadrodaydı   (boş = hâlâ çalışıyor)
+   İkisi de 'YYYY-MM-DD' (hafta başı Pazartesi). Metin karşılaştırması
+   tarih sırasıyla aynı sonucu verdiği için doğrudan < > ile kıyaslanır.
+--------------------------------------------------------------------- */
+let aktifHaftaAnahtari = null;    // o an görüntülenen haftanın Pazartesi'si
+
+function haftadaAktif(p){
+  if(!aktifHaftaAnahtari) return true;              // hafta bilinmiyorsa süzme
+  if(p.startWeek && aktifHaftaAnahtari < p.startWeek) return false;
+  if(p.endWeek   && aktifHaftaAnahtari > p.endWeek)   return false;
+  return true;
+}
+
+function rebuildPeople(){
+  PEOPLE.forEach(p => { p.primary = p.primary || []; p.backup = p.backup || []; });
+  const aktif = PEOPLE.filter(haftadaAktif);             // o hafta kadroda olanlar
+  ROSTER = aktif.filter(p => p.hasRow !== false);         // çizelgede satırı olanlar
+  MANAGERS = aktif.filter(p => p.hasRow === false);       // sadece akşam sorumlusu havuzunda
+  ALL_PEOPLE = PEOPLE;                                    // ayarlar paneli hepsini gösterir
+  SUP_POOL = aktif.filter(p => p.sup);
+}
+
+// Hafta değişince kadroyu o haftaya göre yeniden kur
+function haftayaGoreKadroyuTazele(){
+  aktifHaftaAnahtari = fmtDate(currentMonday);
+  rebuildPeople();
+}
+rebuildPeople();
+
+// canCover, isOnCall, DAY_NAMES -> js/utils.js dosyasına taşındı
+
+// kurallar.md madde 5 — günlük açık saatler (JS: 0=Pazar...6=Cumartesi)
+function operatingHours(dateObj){
+  const key = fmtDate(dateObj);
+  // Güne özel dükkan saati (kullanıcı o gün için çarktan ayarladıysa) öncelikli.
+  if(typeof weekData !== 'undefined' && weekData && weekData.days[key] && weekData.days[key].customHours){
+    const ch = weekData.days[key].customHours;
+    if(ch.open && ch.close) return {open: ch.open, close: ch.close};
+  }
+  const dow = dateObj.getDay(); // 0=Paz,1=Pzt,...6=Cmt
+  if(dow === 0) return {open:'11:00', close:'20:00'};
+  if(dow === 6) return {open:'09:00', close:'20:30'};
+  return {open:'09:00', close:'21:00'};
+}
+
+// kurallar.md madde 2 — varsayılan kapsama kuralları (aç/kapa edilebilir)
+const DEFAULT_RULES = [
+  {id:'fotokopi', zones:['FOTOKOPI'], min:1, max:1, label:'Fotokopi', enabled:true},
+  {id:'kasa', zones:['KASA'], min:1, max:null, label:'Kasa', enabled:true},
+  {id:'ders', zones:['DERS_KITAPLARI'], min:1, max:null, label:'Ders Kitapları', enabled:true},
+  {id:'kirtasiye', zones:['KIRTASIYE'], min:1, max:null, label:'Kırtasiye', enabled:true},
+  {id:'kafegrup', zones:['KAFE','SANATSAL','OKUMA_KITABI'], min:1, max:null, label:'Kafe / Sanatsal / Okuma Kitabı', enabled:true, critical:true, fullBlock:true},
+];
+// Bir kişi bu kurala bakabilir mi? "fullBlock" kurallarda (kafe bloğu) kişinin
+// bloğun TAMAMINA bakabilmesi gerekir — tek bir alt bölüme bakabilmek yetmez.
+// Bu, kafe bloğuna (kafe/okuma/oyuncak/sanatsal) bakabilen kişileri verir.
+function capableFor(rule, p){
+  return rule.fullBlock ? rule.zones.every(z => canCover(p, z))
+                        : rule.zones.some(z => canCover(p, z));
+}
+const SUP_COVERS_KASA_RULE = {id:'sup_kasa', label:'Akşam sorumlusu 19:00–21:00 arası kasaya bakar (gün içinde sayılmaz)', enabled:true};
+
+// Kalıcı depolama (PREFIX, hasCloud, hasLocal, canPersist, store, markSaved)
+// -> js/storage.js dosyasına taşındı
+
+/* ---------------------------------------------------------------------
+   Yardımcı fonksiyonlar
+   NOT: pad, fmtDate, toMin, hhmm, mondayOf, addDays, dayLabel,
+   blankAssignment, isWorking, isOffLeave, zoneAtMinute, addHours,
+   canCover, isOnCall, isFullTime, DAY_NAMES -> js/utils.js dosyasında.
+--------------------------------------------------------------------- */
+// kurallar.md madde 6 — bir personel Cumartesi ve Pazar birden izinli olamaz
+// (bu fonksiyon currentMonday/weekData verilerine bağlı olduğu için burada kaldı)
+function weekendDoubleOffBlocked(dateStr, name, newLeave){
+  const keys = [...Array(7)].map((_,i)=>fmtDate(addDays(currentMonday,i)));
+  const satKey = keys[5], sunKey = keys[6];
+  if(dateStr !== satKey && dateStr !== sunKey) return false;
+  if(newLeave !== 'IZINLI' && newLeave !== 'YILLIK') return false;
+  const otherKey = (dateStr === satKey) ? sunKey : satKey;
+  return isOffLeave(weekData.days[otherKey].assignments[name]);
+}
+
+/* ---------------------------------------------------------------------
+   Durum
+--------------------------------------------------------------------- */
+let currentMonday = mondayOf(new Date());
+let weekData = null;      // {days:{ 'YYYY-MM-DD': {assignments:{name:{...}}, sup:name|null} }}
+let rules = JSON.parse(JSON.stringify(DEFAULT_RULES));
+let supRuleEnabled = true;
+// Pazar telafisi (patron insiyatifi): Pazar çalışan tam zamanlıya bir hafta içi
+// gününden 1 saat kısılır (10 saatçi 60→59, 9 saatçi 54→53).
+let sundayComp = true;
+// Geçen hafta Pazar izinli olanların adları (feedback: dinlenme aralığı için bu
+// hafta izni Çarşamba sonrasına yönlendir). Oluşturma öncesi doldurulur.
+let prevSundayOff = new Set();
+let selectedValidationDay = 0; // 0..6
+let editing = null;       // {dateStr, name}
+let ledger = [];          // Borç/Alacak: manuel hareketler [{id,name,date,hours,note,ts}]
+let balanceCache = {};    // computeAllBalances() sonucu — {name:{thisWeek,auto,manual,total}}
+
+async function loadSettings(){
+  const r = await store.get('settings');
+  if(r && r.value){
+    try{
+      const s = JSON.parse(r.value);
+      // Kurallar artık arayüzden düzenlenebiliyor — kayıtlıysa olduğu gibi yükle.
+      // Eski sürümden kalan kayıtlarda "kritik / bloğun tamamı" bayrakları hiç
+      // yoktu; o alanlar eksikse varsayılandan tamamla.
+      if(s.rules && Array.isArray(s.rules) && s.rules.length){
+        rules = s.rules.map(r => {
+          const d = DEFAULT_RULES.find(x => x.id === r.id);
+          if(d && !('critical' in r) && !('fullBlock' in r)){
+            const merged = Object.assign({}, r);
+            if(d.critical) merged.critical = true;
+            if(d.fullBlock) merged.fullBlock = true;
+            return merged;
+          }
+          return r;
+        });
+      }
+      // Kayıtlı ayarlardan personel ve bölgeler (v1: kişiye özel göç yok).
+      let people = (s.people && Array.isArray(s.people) && s.people.length) ? s.people.slice() : null;
+      let zones = (s.zones && Array.isArray(s.zones) && s.zones.length) ? s.zones.slice() : null;
+      let migrated = false;
+      if(zones){ ZONES = zones; rebuildZones(); if(s.zones && zones.length !== s.zones.length) migrated = true; }
+      if(people){ PEOPLE = people; rebuildPeople(); if(s.people && people.length !== s.people.length) migrated = true; }
+      if(typeof s.supRuleEnabled === 'boolean') supRuleEnabled = s.supRuleEnabled;
+      if(typeof s.sundayComp === 'boolean') sundayComp = s.sundayComp;
+      // (s.templates artık kullanılmıyor — haftalık şablon özelliği kaldırıldı.
+      //  Eski yedeklerde bu alan bulunabilir, sessizce yok sayılır.)
+      if(Array.isArray(s.ledger)) ledger = s.ledger.slice();
+      if(migrated){ try{ await saveSettings(); }catch(e){} }
+    }catch(e){ /* bozuk ayar, varsayılanla devam */ }
+  }
+}
+async function saveSettings(){
+  const res = await store.set('settings', JSON.stringify({rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger}));
+  // Ayar kaydı (personel/kurallar/borç-alacak) sessizce kaybolmasın — normalde
+  // kaydedilebiliyorken bu seferki yazma başarısız olduysa üstteki rozette uyar.
+  if(res === null && canPersist) markSaved('fail');
+  return res;
+}
+
+// NOT: "Haftalık şablon" özelliği kaldırıldı (15 Ağustos 2026). Sebebi:
+// şablon yalnızca hiç dokunulmamış boş haftaları dolduruyordu ve
+// "Haftayı otomatik oluştur" onu tamamen eziyordu — iki sistem birbirinden
+// habersizdi. Artık haftayı doldurmanın tek yolu otomatik oluşturucu;
+// kişiye özel düzen 3 numaralı paneldeki kişi ayarlarından tanımlanır.
+
+function emptyWeek(){
+  const days = {};
+  for(let i=0;i<7;i++){
+    const key = fmtDate(addDays(currentMonday, i));
+    const assignments = {};
+    ROSTER.forEach(p => assignments[p.name] = blankAssignment());
+    days[key] = {assignments, sup:null};
+  }
+  return {days};
+}
+
+async function loadWeek(){
+  const key = 'week:' + fmtDate(currentMonday);
+  const r = await store.get(key);
+  if(r && r.value){
+    try{ weekData = JSON.parse(r.value); markSaved(true); undoTemizle(); return; }catch(e){}
+  }
+  weekData = emptyWeek();
+  // yeni oluşturulan boş haftayı hemen kaydet
+  markSaved(false);
+  const res = await store.set(key, JSON.stringify(weekData));
+  markSaved(res !== null ? true : 'fail');
+  undoTemizle();   // başka haftaya geçildi (ya da ilk açılış) — geri al yığını o haftaya ait, sıfırla
+}
+
+let saveTimer = null;
+function scheduleSave(){
+  markSaved(false);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const key = 'week:' + fmtDate(currentMonday);
+    const res = await store.set(key, JSON.stringify(weekData));
+    markSaved(res !== null ? true : 'fail');
+  }, 400);
+}
+// markSaved -> js/storage.js dosyasına taşındı
+
+// Ekran çizimi (üst gezinme, çizelge tablosu) -> js/render.js dosyasına taşındı
+
+// Hücre düzenleyici ve haftalık şablon pencereleri -> js/modals.js dosyasına taşındı
+
+// Kapsama doğrulama ve öneriler -> js/validation.js dosyasına taşındı
+
+// Otomatik haftalık liste oluşturucu -> js/generator.js dosyasına taşındı
+// exportPng, roundRect, drawPill -> js/export-png.js dosyasina tasindi
+
+/* ---------------------------------------------------------------------
+   JSON yedek al / yükle
+--------------------------------------------------------------------- */
+async function collectBackup(){
+  const settingsR = await store.get('settings');
+  const weekKeys = await store.listKeys('week:');
+  const weeks = {};
+  for(const k of weekKeys){
+    const r = await store.get(k);
+    if(r && r.value){ try{ weeks[k] = JSON.parse(r.value); }catch(e){} }
+  }
+  return {
+    app: 'petek-calisma-programi',
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    settings: (settingsR && settingsR.value) ? JSON.parse(settingsR.value) : {rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger},
+    weeks,
+  };
+}
+
+// Haftayı sıfırla — bu haftadaki tüm atamaları temizler. Yıllık izin ve borç
+// izni çoğu zaman korunmak istenir (kişi hâlâ izinde / hesap kaydı), o yüzden
+// ayrı sorulur. İkisi de "elle girilir, dokunulmaz" sınıfından (isManualLeave).
+document.getElementById('btnReset').addEventListener('click', async () => {
+  if(kilitEngeli('Haftayı sıfırla')) return;
+  // sayım: bu hafta ne var?
+  let filled = 0, annual = 0, borc = 0, locked = 0, sups = 0;
+  for(let i=0;i<7;i++){
+    const k = fmtDate(addDays(currentMonday, i));
+    const day = weekData.days[k];
+    ROSTER.forEach(p => {
+      const a = day.assignments[p.name];
+      if(!a) return;
+      if(a.leave === 'YILLIK') annual++;
+      else if(a.leave === 'BORC') borc++;
+      else if(isWorking(a) || a.leave === 'IZINLI') filled++;
+      if(a.manual) locked++;
+    });
+    if(day.sup) sups++;
+  }
+  if(!filled && !annual && !borc && !sups){ alert('Bu hafta zaten boş.'); return; }
+
+  const keepManual = (annual || borc) > 0
+    ? confirm(`Bu haftayı sıfırlamak üzeresin.\n\n` +
+        `Doldurulmuş: ${filled} hücre` + (locked ? ` (${locked} sabit 📌)` : '') + `\n` +
+        `Yıllık izin: ${annual} gün\nBorç izni: ${borc} gün\nAkşam sorumlusu: ${sups} gün\n\n` +
+        `» TAMAM = yıllık izin ve borç izinlerini KORU, gerisini sil\n» İPTAL = onlar dahil HER ŞEYİ sil ` +
+        `(bir sonraki soruda onaylarsın)`)
+    : true;
+
+  if(!keepManual){
+    if(!confirm('Yıllık izin ve borç izinleri dahil bu haftadaki HER ŞEY silinecek. Emin misin?')) return;
+  } else if(annual === 0 && borc === 0){
+    if(!confirm('Bu haftadaki tüm atamalar silinecek. Emin misin?')) return;
+  }
+
+  undoKaydet();
+  for(let i=0;i<7;i++){
+    const k = fmtDate(addDays(currentMonday, i));
+    const day = weekData.days[k];
+    ROSTER.forEach(p => {
+      const a = day.assignments[p.name];
+      if(keepManual && isManualLeave(a)) return;   // yıllık izin / borç izni koru
+      day.assignments[p.name] = blankAssignment();
+    });
+    day.sup = null;
+    delete day.supManual;
+  }
+  scheduleSave();
+  renderGrid(); renderValidation();
+  renderGenReport(null);
+});
+
+document.getElementById('btnBackup').addEventListener('click', async () => {
+  const data = await collectBackup();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `petek_yedek_${fmtDate(new Date())}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+});
+
+document.getElementById('btnRestore').addEventListener('click', () => document.getElementById('fileRestore').click());
+document.getElementById('fileRestore').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    let obj;
+    try{ obj = JSON.parse(reader.result); }
+    catch(err){ alert('Dosya okunamadı — geçerli bir yedek JSON değil.'); return; }
+    if(!obj || obj.app !== 'petek-calisma-programi'){
+      if(!confirm('Bu dosya bu uygulamanın yedeği gibi görünmüyor. Yine de yüklemeyi dene?')) { e.target.value=''; return; }
+    }
+    try{
+      if(obj.settings) await store.set('settings', JSON.stringify(obj.settings));
+      if(obj.weeks){ for(const [k,v] of Object.entries(obj.weeks)){ await store.set(k, JSON.stringify(v)); } }
+      await loadSettings();
+      haftayaGoreKadroyuTazele();
+      await loadWeek();
+      ensureWeekPeople();
+      renderAll();
+      alert('Yedek yüklendi.');
+    }catch(err){ alert('Yükleme sırasında hata oluştu.'); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('btnUndo').addEventListener('click', geriAl);
+
+document.getElementById('btnPng').addEventListener('click', () => {
+  try{ exportPng(); }catch(err){ alert('Görsel oluşturulamadı: ' + err.message); }
+});
+
+/* ---------------------------------------------------------------------
+   Hafta gezinme
+--------------------------------------------------------------------- */
+document.getElementById('prevWeek').addEventListener('click', async () => {
+  currentMonday = addDays(currentMonday, -7);
+  haftayaGoreKadroyuTazele();          // o hafta kimler kadrodaydı
+  await loadWeek(); ensureWeekPeople(); renderAll();
+});
+document.getElementById('nextWeek').addEventListener('click', async () => {
+  currentMonday = addDays(currentMonday, 7);
+  haftayaGoreKadroyuTazele();
+  await loadWeek(); ensureWeekPeople(); renderAll();
+});
+
+/* ---------------------------------------------------------------------
+   Hafta kilidi düğmesi
+   Kilitle: hafta kesinleşti, yanlışlıkla yeniden dağıtılmasın.
+   Kilidi aç: yeniden dağıtıma izin ver (onay ister).
+--------------------------------------------------------------------- */
+// Yıllık izin sayacı — yıl seçici
+document.getElementById('izinYilSec').addEventListener('change', (e) => {
+  izinYili = Number(e.target.value);
+  renderYillikIzin();
+});
+
+document.getElementById('btnLock').addEventListener('click', () => {
+  if(haftaKilitli()){
+    if(!confirm('Bu haftanın kilidini açmak üzeresin.\n\n'
+      + 'Kilit açılınca "Haftayı otomatik oluştur" ve "Haftayı sıfırla" yeniden\n'
+      + 'kullanılabilir olur — yani hafta yanlışlıkla baştan dağıtılabilir.\n\n'
+      + 'Devam edilsin mi?')) return;
+    delete weekData.locked;
+    delete weekData.lockedAt;
+  } else {
+    if(!confirm('Bu hafta kilitlensin mi? 🔒\n\n'
+      + '» "Haftayı otomatik oluştur" ve "Haftayı sıfırla" ÇALIŞMAZ olur\n'
+      + '» Tek tek hücreleri elle düzenlemeye DEVAM edebilirsin\n\n'
+      + 'Hafta personele duyurulduysa (WhatsApp vb.) kilitlemen önerilir.')) return;
+    weekData.locked = true;
+    weekData.lockedAt = new Date().toISOString();
+  }
+  scheduleSave();
+  renderWeekLock();
+});
+
+// Personel / Bölüm / Kural yönetimi -> js/settings-panels.js dosyasına taşındı
+
+// Borç / Alacak Sayacı -> js/ledger.js dosyasına taşındı
+
+function renderAll(){
+  renderHeader();
+  renderGrid();
+  renderValidation();
+  renderPeople();
+  renderZones();
+  renderRules();
+}
+
+(async function init(){
+  renderLegend();
+  renderFooter();
+  await loadSettings();
+  haftayaGoreKadroyuTazele();          // kadro, açılışta da haftaya göre süzülür
+  await loadWeek();
+  ensureWeekPeople();
+  renderAll();
+})();
+</script>
+
+</body>
+</html>
