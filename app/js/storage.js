@@ -35,6 +35,13 @@ if(DENEME_MODU){
     s.textContent = '🧪 DENEME MODU — buraya girdiğin veriler ayrı tutulur, gerçek çizelgene karışmaz. Normale dönmek için adresten "?deneme" kısmını sil.';
     s.style.cssText = 'position:sticky; top:0; z-index:100; background:#B98327; color:#241d0a;'
       + 'font-weight:700; font-size:13px; text-align:center; padding:8px 12px; line-height:1.4;';
+    // Boş ekranla karşılaşmasınlar: uydurma örnek personeli yükleyip bir hafta kuran düğme (js/ornek-veri.js)
+    const b = document.createElement('button');
+    b.textContent = 'Örnek personeli yükle';
+    b.style.cssText = 'margin-left:12px; padding:4px 12px; border-radius:6px; border:1px solid #241d0a;'
+      + 'background:#fff; color:#241d0a; font-weight:700; font-size:12.5px; cursor:pointer;';
+    b.addEventListener('click', () => ornekVeriYukle());
+    s.appendChild(b);
     document.body.insertBefore(s, document.body.firstChild);
   });
 }
