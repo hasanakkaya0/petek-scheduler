@@ -257,7 +257,7 @@ function generateWeek(){
       if(a.leave === 'YILLIK') (annual[p.name] || (annual[p.name] = new Set())).add(i);
       else if(a.leave === 'BORC') (debt[p.name] || (debt[p.name] = new Set())).add(i);
       else if(a.leave === 'IZINLI' && a.manual) (manualOff[p.name] || (manualOff[p.name] = new Set())).add(i);
-      else if(a.manual){
+      else if(a.manual && isWorking(a)){   // BOŞ "sabit" kayıt günü kilitlemesin (bkz. bosSabitleriTemizle)
         fixed[p.name + '|' + i] = JSON.parse(JSON.stringify(a));
         // Elle sabitlenmiş ÇALIŞMA günü: izin dağıtıcı bu güne izin yazmasın.
         // (Yazsaydı birkaç satır aşağıda sabit vardiya izni ezer ve kişi

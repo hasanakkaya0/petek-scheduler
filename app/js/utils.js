@@ -94,6 +94,25 @@ function yenileIzininiTemizle(){
   }catch(e){ /* önemli değil */ }
 }
 
+/* ---------- Boş "sabit" hücreler ----------
+   Hücre penceresinde saatler boş bırakılıp Kaydet'e basılırsa eskiden {leave:'NONE', start:null,
+   end:null, manual:true} kaydı oluşuyordu: ekranda görünmez ("atanmamış") ama sabit sayılır ve
+   "Haftayı otomatik oluştur" o günü kişi için kilitleyip izinli bırakırdı. Böyle kayıtların
+   sabit işareti kaldırılır. Dönen: kaç hücre temizlendi. */
+function bosSabitleriTemizle(wd){
+  let n = 0;
+  if(!wd || !wd.days) return 0;
+  Object.keys(wd.days).forEach(k => {
+    const asg = wd.days[k] && wd.days[k].assignments;
+    if(!asg) return;
+    Object.keys(asg).forEach(ad => {
+      const a = asg[ad];
+      if(a && a.manual && a.leave === 'NONE' && !a.start && !a.end){ delete a.manual; n++; }
+    });
+  });
+  return n;
+}
+
 /* ---------- Atama (bir kişinin bir günü) kontrolleri ---------- */
 
 // Boş/atanmamış bir gün

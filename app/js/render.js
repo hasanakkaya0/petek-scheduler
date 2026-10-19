@@ -34,7 +34,7 @@ function sabitHucreSay(){
   for(let i = 0; i < 7; i++){
     const d = weekData.days[fmtDate(addDays(currentMonday, i))];
     if(!d) continue;
-    ROSTER.forEach(p => { const a = d.assignments[p.name]; if(a && a.manual) n++; });
+    ROSTER.forEach(p => { const a = d.assignments[p.name]; if(a && a.manual && (isWorking(a) || a.leave !== 'NONE')) n++; });   // boş (görünmez) sabit sayılmaz
   }
   return n;
 }

@@ -25,6 +25,17 @@ function openEditor(dateStr, name){
   document.getElementById('fLeave').value = a.leave;
   document.getElementById('fStart').value = a.start || '';
   document.getElementById('fEnd').value = a.end || '';
+  // BOŞ hücre açılınca saatler boş gelmesin: kişinin günlük saatine göre önerilen vardiya
+  // (dükkânın o günkü açılışından başlar, kapanışı aşmaz) doldurulur. İstenmezse değiştirilir;
+  // ikisi de boşaltılıp Kaydet denirse hücre temizlenir.
+  const oneri = document.getElementById('oneriNot');
+  if(oneri) oneri.hidden = true;
+  if(a.leave === 'NONE' && !a.start && !a.end && person){
+    const s = makeShift(person, new Date(dateStr + 'T00:00'), 'open');
+    document.getElementById('fStart').value = s.start;
+    document.getElementById('fEnd').value = s.end;
+    if(oneri) oneri.hidden = false;
+  }
 
   const zoneSel = document.getElementById('fZone');
   zoneSel.innerHTML = ZONES.map(z => `<option value="${z.id}">${z.label}</option>`).join('');
@@ -87,16 +98,29 @@ document.getElementById('fLeave').addEventListener('change', toggleFieldsByLeave
 document.getElementById('btnCancel').addEventListener('click', () => document.getElementById('overlay').classList.remove('show'));
 document.getElementById('overlay').addEventListener('click', e => { if(e.target.id==='overlay') e.currentTarget.classList.remove('show'); });
 
-document.getElementById('btnSave').addEventListener('click', () => {
+function hucreyiKaydet(){
   const {dateStr, name} = editing;
   const leave = document.getElementById('fLeave').value;
   let a;
   if(leave === 'NONE'){
+    const bas = document.getElementById('fStart').value || null;
+    const bit = document.getElementById('fEnd').value || null;
+    if(!bas && !bit){
+      // İkisi de boş = hücreyi TEMİZLE. (Eskiden boş bir "sabit" kayıt oluşuyordu: ekranda
+      // görünmez, ama sabit sayılır ve otomatik oluşturma o günü kilitlerdi.)
+      undoKaydet();
+      weekData.days[dateStr].assignments[name] = blankAssignment();
+      document.getElementById('overlay').classList.remove('show');
+      renderGrid(); renderValidation(); scheduleSave();
+      return;
+    }
+    if(!bas || !bit){ alert('Başlangıç ve bitiş saatinin ikisini de yaz (ya da ikisini de boş bırakıp hücreyi temizle).'); return; }
+    if(toMin(bit) <= toMin(bas)){ alert('Bitiş saati başlangıçtan sonra olmalı.'); return; }
     const blocks = currentBlocks().filter(b => b.start && b.end && toMin(b.end) > toMin(b.start));
     a = {
       leave:'NONE',
-      start: document.getElementById('fStart').value || null,
-      end: document.getElementById('fEnd').value || null,
+      start: bas,
+      end: bit,
       zone: document.getElementById('fZone').value,
     };
     if(blocks.length) a.blocks = blocks;
@@ -110,5 +134,6 @@ document.getElementById('btnSave').addEventListener('click', () => {
   renderGrid();
   renderValidation();
   scheduleSave();
-});
+}
+document.getElementById('btnSave').addEventListener('click', hucreyiKaydet);
 
