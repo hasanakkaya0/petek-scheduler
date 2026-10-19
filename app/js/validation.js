@@ -80,6 +80,14 @@ function coverageAt(dateObj, dateStr, minute){
   return coverage;
 }
 
+/* Bu güne HİÇ vardiya girilmiş mi? Girilmemişse (boş hafta ya da kullanıcı henüz o güne
+   gelmemiş) eksik/kapsama listesi üretilmez — "35 sorun" gibi korkutucu bir liste yerine
+   kısa bir yönlendirme gösterilir. Gün dolmaya başlayınca (elle ya da otomatik) kontrol açılır. */
+function gunDoluMu(dateStr){
+  const g = weekData && weekData.days && weekData.days[dateStr];
+  return !!g && ROSTER.some(p => isWorking(g.assignments[p.name]));
+}
+
 function renderTimeline(){
   const el = document.getElementById('timeline');
   const violEl = document.getElementById('violList');
@@ -93,15 +101,19 @@ function renderTimeline(){
 
   const activeRules = rules.filter(r => r.enabled);
   const violations = [];
+  const gunBos = !gunDoluMu(dateStr);
 
   const bilgiler = [];
 
   el.innerHTML = activeRules.map(rule => {
+    const kotu = [];                         // bu kuralın ihlalli yarım saatleri ({m, count})
     const segs = slots.map(m => {
       const cov = coverageAt(d, dateStr, m);
       const count = rule.zones.reduce((s,z) => s + (cov[z]?cov[z].length:0), 0);
       const hh = pad(Math.floor(m/60)) + ':' + pad(m%60);
       const gecerli = kuralGecerliMi(rule, m, openMin, closeMin);
+
+      if(gunBos) return `<div class="tseg off" data-tip="${hh} · henüz vardiya girilmemiş"></div>`;
 
       if(!gecerli){
         // Kuralın saat aralığı dışı — gri gösterilir, ihlal sayılmaz.
@@ -110,11 +122,16 @@ function renderTimeline(){
       }
 
       const bad = count < rule.min || (rule.max!==null && count > rule.max);
-      if(bad){
-        violations.push(`${hh} — ${rule.label}: ${count} kişi (kural: min ${rule.min}${rule.max?', max '+rule.max:''})`);
-      }
+      if(bad) kotu.push({m, count});
       return `<div class="tseg ${bad?'bad':'ok'}" data-tip="${hh} · ${count} kişi"></div>`;
     }).join('');
+    // Ardışık ve aynı kişi sayılı yarım saatler TEK satıra birleşir: "19:00–21:00 — Fotokopi: 0 kişi"
+    for(let ilk = 0; ilk < kotu.length;){
+      let son = ilk;
+      while(son + 1 < kotu.length && kotu[son + 1].m === kotu[son].m + 30 && kotu[son + 1].count === kotu[ilk].count) son++;
+      violations.push(`${hhmm(kotu[ilk].m)}–${hhmm(kotu[son].m + 30)} — ${rule.label}: ${kotu[ilk].count} kişi (kural: min ${rule.min}${rule.max?', max '+rule.max:''})`);
+      ilk = son + 1;
+    }
     const saatNot = (rule.from || rule.to)
       ? ` <span style="font-weight:400; font-size:10.5px; color:var(--ink-soft)">(${kuralSaatMetni(rule)})</span>` : '';
     return `<div class="trow"><div class="zname">${rule.label}${saatNot}</div><div class="tbar">${segs}</div></div>`;
@@ -126,7 +143,9 @@ function renderTimeline(){
       + `kuralların geçerli olmadığı saatlerde — sorun değil.</div>`
     : '';
 
-  if(violations.length === 0){
+  if(gunBos){
+    violEl.innerHTML = `<div class="none">Bu gün henüz doldurulmamış — vardiya girilince (elle ya da ✨ Haftayı otomatik oluştur ile) kapsama burada kontrol edilir.</div>`;
+  } else if(violations.length === 0){
     violEl.innerHTML = `<div class="none">✓ Bu gün için aktif kurallara göre kapsama sorunu yok.</div>` + bilgiOzet;
   } else {
     violEl.innerHTML = violations.map(v => `<div class="viol-item">${v}</div>`).join('') + bilgiOzet;
@@ -309,12 +328,19 @@ let sonOlusturmaZamani = null;
 
 function haftaSorunlariniHesapla(){
   const sorunlar = [], notlar = [];
-  if(!weekData) return {sorunlar, notlar, sabit:0};
+  if(!weekData) return {sorunlar, notlar, sabit:0, bosGunler:[], bosHafta:false};
   const keys = [...Array(7)].map((_,i) => fmtDate(addDays(currentMonday, i)));
   const aktif = rules.filter(r => r.enabled);
 
+  // Hiç vardiya girilmemiş günler: eksik / sorumlu kontrolü YAPILMAZ (kullanıcı henüz o güne gelmemiş
+  // ya da hafta tamamen boş). Gün dolmaya başlayınca — elle de olsa — kontrol kendiliğinden açılır.
+  const bosGunler = [];
+  keys.forEach((k, i) => { if(!gunDoluMu(k)) bosGunler.push(i); });
+  const bosHafta = bosGunler.length === 7;
+
   // 1) KAPSAMA — kuralın geçerli olduğu saatlerde boş kalan aralıklar
   keys.forEach((k, i) => {
+    if(bosGunler.includes(i)) return;
     const dObj = addDays(currentMonday, i);
     const oh = operatingHours(dObj);
     const oM = toMin(oh.open), cM = toMin(oh.close);
@@ -329,7 +355,8 @@ function haftaSorunlariniHesapla(){
         }
         if(bos && bas === null) bas = m;
         if(!bos && bas !== null){
-          sorunlar.push({tur:'açık', metin:`${DAY_NAMES[i]} — ${rule.label} ${hhmm(bas)}–${hhmm(m)} arası boş`});
+          sorunlar.push({tur:'açık', gun:i, kural:rule.label, aralik:`${hhmm(bas)}–${hhmm(m)}`,
+            metin:`${DAY_NAMES[i]} — ${rule.label} ${hhmm(bas)}–${hhmm(m)} arası boş`});
           bas = null;
         }
       }
@@ -366,6 +393,7 @@ function haftaSorunlariniHesapla(){
   keys.forEach((k, i) => {
     const d = weekData.days[k];
     const kapanis = toMin(operatingHours(addDays(currentMonday, i)).close);
+    if(bosGunler.includes(i)) return;                  // henüz doldurulmamış gün: sorumlu notu da yok
     if(!d.sup){
       if(addDays(currentMonday, i).getDay() !== 0)
         notlar.push(`${DAY_NAMES[i]} — akşam sorumlusu atanmamış`);
@@ -391,21 +419,35 @@ function haftaSorunlariniHesapla(){
     });
   });
 
-  return {sorunlar, notlar, sabit: (typeof sabitHucreSay === 'function' ? sabitHucreSay() : 0)};
+  return {sorunlar, notlar, sabit: (typeof sabitHucreSay === 'function' ? sabitHucreSay() : 0), bosGunler, bosHafta};
 }
 
 function renderCanliDurum(){
   const el = document.getElementById('genReport');
   if(!el) return;
-  const {sorunlar, notlar, sabit} = haftaSorunlariniHesapla();
+  const {sorunlar, notlar, sabit, bosGunler, bosHafta} = haftaSorunlariniHesapla();
 
-  const grup = {};
-  sorunlar.forEach(s => (grup[s.tur] ||= []).push(s.metin));
+  // "Boş kalan saatler" GÜNE göre tek satırda toplanır:
+  // "Pazartesi — Fotokopi 19:00–21:00 · Kasa 09:00–10:00"  (eskiden her aralık ayrı satırdı → 35 satır)
+  const grup = {}, acikGunler = {};
+  sorunlar.forEach(s => {
+    if(s.tur === 'açık'){ (acikGunler[s.gun] ||= []).push(`${s.kural} ${s.aralik}`); return; }
+    (grup[s.tur] ||= []).push(s.metin);
+  });
+  const acikSatirlar = Object.keys(acikGunler).map(Number).sort((a, b) => a - b)
+    .map(g => `<b>${DAY_NAMES[g]}</b> — ${acikGunler[g].join(' · ')}`);
+  if(acikSatirlar.length) grup['açık'] = acikSatirlar;
+  const acikSayisi = sorunlar.filter(s => s.tur === 'açık').length;
 
   const rozet = [];
-  rozet.push(sorunlar.length
-    ? `<span class="sumchip bad">${sorunlar.length} sorun</span>`
-    : `<span class="sumchip ok">sorun yok</span>`);
+  if(bosHafta){
+    rozet.push(`<span class="sumchip">hafta henüz boş</span>`);
+  } else {
+    rozet.push(sorunlar.length
+      ? `<span class="sumchip bad">${sorunlar.length} sorun</span>`
+      : `<span class="sumchip ok">sorun yok</span>`);
+    if(bosGunler.length) rozet.push(`<span class="sumchip">${bosGunler.length} gün henüz boş</span>`);
+  }
   if(sabit) rozet.push(`<span class="sumchip warn">${sabit} sabit 📌</span>`);
   if(notlar.length) rozet.push(`<span class="sumchip">${notlar.length} not</span>`);
 
@@ -416,11 +458,23 @@ function renderCanliDurum(){
   const basliklar = {'açık':'Boş kalan saatler', 'izin':'İzin sorunu',
                      'çakışma':'Çakışma', 'sorumlu':'Akşam sorumlusu'};
   Object.entries(grup).forEach(([tur, list]) => {
-    html += `<div class="g-sec">${basliklar[tur] || tur} (${list.length})</div>`
+    const sayi = tur === 'açık' ? acikSayisi : list.length;
+    html += `<div class="g-sec">${basliklar[tur] || tur} (${sayi})</div>`
          + list.map(t => `<div class="g-gap">${t}</div>`).join('');
   });
 
-  if(!sorunlar.length) html += `<div class="g-ok">✓ Bu haftada çözülmemiş sorun yok.</div>`;
+  if(bosHafta){
+    html += `<div class="bos-hafta">Bu hafta henüz boş.<br>`
+         + `Başlamak için <b>✨ Haftayı otomatik oluştur</b>'a bas — ya da hücrelere tıklayıp kendin doldur. `
+         + `Vardiya girdikçe eksikler (kimsenin olmadığı saatler, çakışmalar…) burada görünür.</div>`;
+  } else {
+    if(!sorunlar.length) html += `<div class="g-ok">✓ Bu haftada çözülmemiş sorun yok.</div>`;
+    if(bosGunler.length){
+      html += `<div class="g-note" style="margin-top:8px;">Henüz doldurulmamış günler: `
+           + `${bosGunler.map(g => DAY_NAMES[g]).join(', ')}. Bu günler için eksik kontrolü yapılmıyor; `
+           + `vardiya girdikçe burada görünür.</div>`;
+    }
+  }
 
   if(sabit){
     html += `<div class="g-note" style="margin-top:8px;">📌 ${sabit} hücre elle sabitlenmiş. `

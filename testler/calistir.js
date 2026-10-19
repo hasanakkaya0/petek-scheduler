@@ -44,6 +44,7 @@ const testler = [
   ['BORC/ALACAK PANEL YENILENMESI',   'test_borc_alacak_yenileme.js'],
   ['HAFTA KILIDI',                    'test_hafta_kilidi.js'],
   ['CANLI DURUM PANELI',             'test_canli_durum.js'],
+  ['BOS HAFTA / ELLE DOLDURMA',         'test_bos_hafta.js'],
   ['SURUKLE-BIRAK KOPYALAMA',        'test_surukle_birak.js'],
   ['YILLIK IZIN SAYACI',             'test_yillik_izin.js'],
   ['DUKKAN SAATLERI (tarihli duzen)', 'test_dukkan_saatleri.js'],
