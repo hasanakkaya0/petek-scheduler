@@ -43,6 +43,38 @@ function mondayOf(d){
 // Tarihe gün ekle (negatif de olabilir)
 function addDays(d,n){ const r = new Date(d); r.setDate(d.getDate()+n); return r; }
 
+/* ---------- Dükkân saatleri (tarihli düzen) ----------
+   SHOP_HOURS: düzenler listesi, eskiden yeniye.
+     {from: 'YYYY-MM-DD' | '' (en eski düzen: hep geçerli),
+      days: [7 adet {open, close}]}   // 0 = Pazartesi ... 6 = Pazar
+   Bir tarih için EN SON başlamış düzen geçerlidir. Böylece yeni bir düzen
+   eklenince geçmiş haftalar (ve Borç/Alacak hesabı) eskisi gibi kalır. */
+const DEFAULT_SHOP_HOURS = [
+  {from:'', days:[
+    {open:'09:00', close:'21:00'}, {open:'09:00', close:'21:00'}, {open:'09:00', close:'21:00'},
+    {open:'09:00', close:'21:00'}, {open:'09:00', close:'21:00'},
+    {open:'09:00', close:'20:30'},      // Cumartesi
+    {open:'11:00', close:'20:00'},      // Pazar
+  ]},
+  // Kasım 2026'dan itibaren hafta içi kapanış 20:00 (Cumartesi/Pazar aynı)
+  {from:'2026-11-01', days:[
+    {open:'09:00', close:'20:00'}, {open:'09:00', close:'20:00'}, {open:'09:00', close:'20:00'},
+    {open:'09:00', close:'20:00'}, {open:'09:00', close:'20:00'},
+    {open:'09:00', close:'20:30'},
+    {open:'11:00', close:'20:00'},
+  ]},
+];
+let SHOP_HOURS = JSON.parse(JSON.stringify(DEFAULT_SHOP_HOURS));
+
+// Bir tarihin (Date) gün içi varsayılan açılış/kapanışı — güne özel saat HARİÇ
+function dowDefaultHours(dObj){
+  const key = fmtDate(dObj);
+  let secili = SHOP_HOURS[0];
+  SHOP_HOURS.forEach(e => { if(!e.from || e.from <= key) secili = e; });
+  const g = secili.days[(dObj.getDay() + 6) % 7];
+  return {open: g.open, close: g.close};
+}
+
 /* ---------- Atama (bir kişinin bir günü) kontrolleri ---------- */
 
 // Boş/atanmamış bir gün

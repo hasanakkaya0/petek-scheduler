@@ -35,10 +35,16 @@
     </div>
   </div>
 
-  <div class="spine-legend" id="spineLegend"></div>
+  <nav class="sekmeler" id="sekmeler" role="tablist">
+    <button class="sekme" data-sekme-sec="cizelge" role="tab">📅 Çizelge</button>
+    <button class="sekme" data-sekme-sec="sayac" role="tab">⏱ Sayaçlar</button>
+    <button class="sekme sag" data-sekme-sec="ayar" role="tab">⚙ Ayarlar</button>
+  </nav>
 
-  <div class="panel">
-    <h2><span class="n">1</span>Haftalık çizelge</h2>
+  <div class="spine-legend" id="spineLegend" data-sekme="cizelge"></div>
+
+  <div class="panel" data-sekme="cizelge">
+    <h2>Haftalık çizelge</h2>
     <div style="overflow-x:auto;">
       <table class="grid" id="gridTable"></table>
     </div>
@@ -46,8 +52,8 @@
     <div class="hint">Haftayı doldurmak için <b>✨ Haftayı otomatik oluştur</b>'u kullan — kişi ayarlarındaki saat, izin ve yetkilere göre çizelgeyi kurar. Tek bir günü değiştirmek için o hücreye tıkla — elle değiştirdiğin gün <b>sabit 📌</b> olur ve otomatik oluşturma ona dokunmaz. Programın o günü yeniden düzenlemesini istersen pencerede <b>Serbest</b> seç, <b>Bir vardiyayı başka bir hücreye kopyalamak için sürükleyip bırak</b> — sabit bir vardiyayı sürüklersen hedefe de sabit gider. En sağdaki sütun = akşam sorumlusu.</div>
   </div>
 
-  <div class="panel">
-    <h2><span class="n">2</span>Kapsama kontrolü</h2>
+  <div class="panel" data-sekme="cizelge">
+    <h2>Kapsama kontrolü</h2>
     <div class="daytabs" id="dayTabs"></div>
     <div class="rule-list" id="ruleList"></div>
     <div class="timeline" id="timeline"></div>
@@ -57,8 +63,8 @@
     <div class="week-warn" id="weekWarn"></div>
   </div>
 
-  <div class="panel">
-    <h2><span class="n">3</span>Personel ve yetkiler</h2>
+  <div class="panel" data-sekme="ayar">
+    <h2>Personel ve yetkiler</h2>
     <div class="hint" style="margin-top:0; margin-bottom:10px;">
       Buradan personel ekleyip çıkarabilir, kimin hangi bölüme bakabildiğini, saatlerini ve akşam
       sorumlusu yetkisini değiştirebilirsin. <b>Otomatik liste doğrudan bu ayarlara göre çalışır</b> —
@@ -69,8 +75,8 @@
     <button class="tool" id="btnAddPerson" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Personel ekle</button>
   </div>
 
-  <div class="panel">
-    <h2><span class="n">4</span>Bölümler</h2>
+  <div class="panel" data-sekme="ayar">
+    <h2>Bölümler</h2>
     <div class="hint" style="margin-top:0; margin-bottom:10px;">
       Dükkândaki reyon/görev listesi. Yeni bölüm açılırsa buradan eklenir; rengi çizelgede ve
       indirilen görselde kullanılır.
@@ -79,8 +85,8 @@
     <button class="tool" id="btnAddZone" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Bölüm ekle</button>
   </div>
 
-  <div class="panel">
-    <h2><span class="n">5</span>Kapsama kuralları</h2>
+  <div class="panel" data-sekme="ayar">
+    <h2>Kapsama kuralları</h2>
     <div class="hint" style="margin-top:0; margin-bottom:10px;">
       "Hangi bölümde aynı anda en az/en fazla kaç kişi olmalı" kuralları. Otomatik liste ve
       doğrulama doğrudan bunlara göre çalışır.
@@ -89,8 +95,8 @@
     <button class="tool" id="btnAddRule" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Kural ekle</button>
   </div>
 
-  <div class="panel">
-    <h2><span class="n">6</span>Borç / Alacak Sayacı</h2>
+  <div class="panel" data-sekme="sayac">
+    <h2>Borç / Alacak Sayacı</h2>
     <div class="hint" style="margin-top:0; margin-bottom:10px;">
       Her personelin normalin üstünde/altında çalıştığı saatler burada otomatik birikir.
       <b>Pozitif (+)</b> bakiye şirketin personele borçlu olduğu saat, <b>negatif (−)</b> bakiye
@@ -105,8 +111,8 @@
     <button class="tool" id="btnAddLedger" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Manuel düzeltme ekle</button>
   </div>
 
-  <div class="panel">
-    <h2><span class="n">7</span>Yıllık İzin Sayacı</h2>
+  <div class="panel" data-sekme="sayac">
+    <h2>Yıllık İzin Sayacı</h2>
     <div class="hint" style="margin-top:0; margin-bottom:10px;">
       Her personelin bir takvim yılında (1 Ocak – 31 Aralık) kaç gün
       <b>yıllık izin</b> kullandığını gösterir. Çizelgede "Y. İzin" olarak
@@ -119,6 +125,18 @@
       <span id="izinYilOzet" style="font-size:11.5px; color:var(--ink-soft); font-family:ui-monospace,monospace;"></span>
     </div>
     <div style="overflow-x:auto;"><table class="grid" id="yillikIzinTable"></table></div>
+  </div>
+
+  <div class="panel" data-sekme="ayar">
+    <h2>Dükkân saatleri</h2>
+    <div class="hint" style="margin-top:0; margin-bottom:10px;">
+      Her gün için açılış ve kapanış saati. Çizelge, kapsama kontrolü, otomatik oluşturma ve
+      görsel bu saatlere göre çalışır. Dükkânın çalışma düzeni değişirse <b>yeni bir düzen ekle</b>,
+      geçerli olacağı ilk tarihi yaz — <b>geçmiş haftalar eskisi gibi kalır</b>, Borç/Alacak
+      hesabı kaymaz. Tek bir günü farklı yapmak için çizelgede günün yanındaki ⚙ kullanılır.
+    </div>
+    <div id="shopHoursBox"></div>
+    <button class="tool" id="btnAddShopHours" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Yeni düzen ekle</button>
   </div>
 
   <footer class="note">
@@ -260,7 +278,7 @@
     <div class="field">
       <label>Yıllık izin hakkı (yılda kaç gün)</label>
       <input type="number" id="pIzinHakki" min="0" max="60" placeholder="boş = hak takip edilmiyor, sadece kullanılan sayılır" />
-      <div class="hint">Doldurursan 7. paneldeki Yıllık İzin Sayacı "kaç gün kaldı"yı da gösterir.
+      <div class="hint">Doldurursan Sayaçlar sekmesindeki Yıllık İzin Sayacı "kaç gün kaldı"yı da gösterir.
         Boş bırakırsan yalnızca o yıl kullanılan gün sayılır (eskisi gibi).</div>
     </div>
 
@@ -431,8 +449,14 @@
 <!-- Yardımcı fonksiyonlar (tarih/saat hesapları) — ana koddan ÖNCE yüklenmeli -->
 <script src="js/utils.js"></script>
 
+<!-- Dükkân saatleri paneli (8 numaralı panel) -->
+<script src="js/shop-hours.js"></script>
+
 <!-- Veri kaydetme / yükleme -->
 <script src="js/storage.js"></script>
+
+<!-- Sekmeler (Çizelge / Sayaçlar / Ayarlar) -->
+<script src="js/sekmeler.js"></script>
 
 <!-- Görsel indirme (PNG) -->
 <script src="js/export-png.js"></script>
@@ -545,10 +569,7 @@ function operatingHours(dateObj){
     const ch = weekData.days[key].customHours;
     if(ch.open && ch.close) return {open: ch.open, close: ch.close};
   }
-  const dow = dateObj.getDay(); // 0=Paz,1=Pzt,...6=Cmt
-  if(dow === 0) return {open:'11:00', close:'20:00'};
-  if(dow === 6) return {open:'09:00', close:'20:30'};
-  return {open:'09:00', close:'21:00'};
+  return dowDefaultHours(dateObj);   // tarihli dükkân saatleri (js/utils.js, 8. panelden ayarlanır)
 }
 
 // kurallar.md madde 2 — varsayılan kapsama kuralları (aç/kapa edilebilir)
@@ -566,7 +587,7 @@ function capableFor(rule, p){
   return rule.fullBlock ? rule.zones.every(z => canCover(p, z))
                         : rule.zones.some(z => canCover(p, z));
 }
-const SUP_COVERS_KASA_RULE = {id:'sup_kasa', label:'Akşam sorumlusu 19:00–21:00 arası kasaya bakar (gün içinde sayılmaz)', enabled:true};
+const SUP_COVERS_KASA_RULE = {id:'sup_kasa', label:'Akşam sorumlusu 19:00\'dan kapanışa kadar kasaya bakar (gün içinde sayılmaz)', enabled:true};
 
 // Kalıcı depolama (PREFIX, hasCloud, hasLocal, canPersist, store, markSaved)
 // -> js/storage.js dosyasına taşındı
@@ -634,6 +655,8 @@ async function loadSettings(){
       if(people){ PEOPLE = people; rebuildPeople(); if(s.people && people.length !== s.people.length) migrated = true; }
       if(typeof s.supRuleEnabled === 'boolean') supRuleEnabled = s.supRuleEnabled;
       if(typeof s.sundayComp === 'boolean') sundayComp = s.sundayComp;
+      const gecerliSaat = dukkanSaatleriniDogrula(s.shopHours);
+      if(gecerliSaat) SHOP_HOURS = gecerliSaat;   // kayıtlı yoksa varsayılan düzen kalır
       // (s.templates artık kullanılmıyor — haftalık şablon özelliği kaldırıldı.
       //  Eski yedeklerde bu alan bulunabilir, sessizce yok sayılır.)
       if(Array.isArray(s.ledger)) ledger = s.ledger.slice();
@@ -642,7 +665,7 @@ async function loadSettings(){
   }
 }
 async function saveSettings(){
-  const res = await store.set('settings', JSON.stringify({rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger}));
+  const res = await store.set('settings', JSON.stringify({rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger, shopHours: SHOP_HOURS}));
   // Ayar kaydı (personel/kurallar/borç-alacak) sessizce kaybolmasın — normalde
   // kaydedilebiliyorken bu seferki yazma başarısız olduysa üstteki rozette uyar.
   if(res === null && canPersist) markSaved('fail');
@@ -716,7 +739,7 @@ async function collectBackup(){
     app: 'petek-calisma-programi',
     version: 2,
     exportedAt: new Date().toISOString(),
-    settings: (settingsR && settingsR.value) ? JSON.parse(settingsR.value) : {rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger},
+    settings: (settingsR && settingsR.value) ? JSON.parse(settingsR.value) : {rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger, shopHours: SHOP_HOURS},
     weeks,
   };
 }
@@ -872,6 +895,7 @@ function renderAll(){
   renderPeople();
   renderZones();
   renderRules();
+  renderShopHours();
 }
 
 (async function init(){

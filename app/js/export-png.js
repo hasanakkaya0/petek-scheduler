@@ -134,11 +134,14 @@ function exportPng(){
         ctx.fillStyle = '#262220'; ctx.font = '700 16px ui-monospace, monospace';
         ctx.fillText(`${a.start}–${a.end}`, cx, rowTop + 59);
         if(a.blocks && a.blocks.length){
+          // Gorev degisimi: saat araligi + bolum adi iki satirda (118px sutuna sigsin diye)
           const b = a.blocks[0];
           const bz = ZONE_MAP[b.zone];
+          const fazla = a.blocks.length > 1 ? ` +${a.blocks.length-1}` : '';
           ctx.fillStyle = bz ? bz.color : '#5B5449';
           ctx.font = '700 11.5px ui-monospace, monospace';
-          ctx.fillText(truncate(`${b.start}→ ${bz ? bz.label : b.zone}`, empColW-8), cx, rowTop + 80);
+          ctx.fillText(`${b.start}–${b.end}`, cx, rowTop + 75);
+          ctx.fillText(truncate((bz ? bz.label : b.zone) + fazla, empColW-8), cx, rowTop + 88);
         }
       } else {
         ctx.fillStyle = '#B7AE9C'; ctx.font = 'italic 14px system-ui, sans-serif';

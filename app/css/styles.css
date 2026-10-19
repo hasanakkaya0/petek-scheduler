@@ -370,3 +370,15 @@ td.cell.suruk-hedef{
 .ayrilan-det summary{cursor:pointer; font-size:12.5px; font-weight:700; color:var(--ink-soft); padding:4px 0;}
 .ayrilan-det summary:hover{color:var(--ink);}
 .ayrilan-det table.grid{opacity:.75;}
+
+/* ---------- Sekmeler (Çizelge / Sayaçlar / Ayarlar) ---------- */
+.sekme-gizli{display:none !important;}
+.sekmeler{display:flex; gap:6px; margin:4px 0 16px; border-bottom:2px solid var(--ink); flex-wrap:wrap;}
+.sekme{border:1px solid var(--paper-line); border-bottom:none; background:#EDE7D8; color:var(--ink-soft);
+  font:inherit; font-size:14px; font-weight:600; padding:9px 18px; border-radius:8px 8px 0 0; cursor:pointer;
+  margin-bottom:-2px;}
+.sekme:hover{background:#F3EEE2; color:var(--ink);}
+.sekme.aktif{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+@media (max-width:560px){
+  .sekme{flex:1; padding:11px 8px; font-size:13px; text-align:center;}
+}

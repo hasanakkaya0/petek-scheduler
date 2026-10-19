@@ -61,10 +61,11 @@ function coverageAt(dateObj, dateStr, minute){
     const z = zoneAtMinute(a, minute, p.primary[0]);
     if(z){ (coverage[z] ||= []).push(p.name); }
   });
-  // Akşam sorumlusu SADECE 19:00–21:00 arası kasaya bakan bir yedek olarak sayılır.
-  // Kadroda satırı olan biri sorumluysa (ör. Kişi K), ancak o saatte hâlâ
-  // dükkândaysa sayılır — 19:00'da çıkıyorsa kasayı kapatamaz.
-  if(supRuleEnabled && day.sup && minute >= 19*60 && minute < 21*60){
+  // Akşam sorumlusu SADECE 19:00'dan kapanışa kadar kasaya bakan bir yedek olarak
+  // sayılır (kapanış artık ayarlı: dükkân saatleri 8. panel). Kadroda satırı olan
+  // biri sorumluysa (ör. Kişi K), ancak o saatte hâlâ dükkândaysa sayılır —
+  // 19:00'da çıkıyorsa kasayı kapatamaz.
+  if(supRuleEnabled && day.sup && minute >= 19*60 && minute < toMin(operatingHours(dateObj).close)){
     const supEmp = ROSTER.find(p => p.name === day.sup);
     let present = true;
     if(supEmp){

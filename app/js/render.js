@@ -114,12 +114,7 @@ function renderFooter(){
 --------------------------------------------------------------------- */
 // Güne özel dükkan açılış/kapanış saati — günün yanındaki ⚙'dan ayarlanır.
 // Ayarlanınca "Haftayı otomatik oluştur" o güne göre planlama yapar.
-function dowDefaultHours(dObj){
-  const dow = dObj.getDay();
-  if(dow === 0) return {open:'11:00', close:'20:00'};
-  if(dow === 6) return {open:'09:00', close:'20:30'};
-  return {open:'09:00', close:'21:00'};
-}
+// dowDefaultHours -> js/utils.js (tarihli dükkân saatleri)
 function openDayHours(dateStr){
   const parts = dateStr.split('-').map(Number);
   const dObj = new Date(parts[0], parts[1]-1, parts[2]);
@@ -278,7 +273,7 @@ function cellContent(a){
   const chip = z ? `<span class="chip" style="background:${z.color}">${z.label}</span>` : '';
   const blocks = (a.blocks || []).map(b => {
     const bz = ZONE_MAP[b.zone];
-    return `<span class="blockchip" style="border-color:${bz ? bz.color : '#999'}; color:${bz ? bz.color : '#666'}">${b.start}→ ${bz ? bz.label : b.zone}</span>`;
+    return `<span class="blockchip" style="border-color:${bz ? bz.color : '#999'}; color:${bz ? bz.color : '#666'}">${b.start}–${b.end} ${bz ? bz.label : b.zone}</span>`;
   }).join('');
   return `${chip}<span class="timelabel">${a.start}–${a.end}${pin}</span>${blocks}`;
 }
