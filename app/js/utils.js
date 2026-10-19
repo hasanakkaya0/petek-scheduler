@@ -75,6 +75,25 @@ function dowDefaultHours(dObj){
   return {open: g.open, close: g.close};
 }
 
+/* ---------- Sayfayı "en yeni sürümle" yenileme ----------
+   Adresin sonuna her seferinde yeni bir damga (?yenile=ZAMAN) eklenir. Tarayıcı bu adresi
+   daha önce görmediği için ana sayfayı önbellekten değil SUNUCUDAN alır (Ctrl+Shift+R
+   yerine). Diğer parametreler (ör. ?deneme) ve # kısmı korunur. */
+function yenileAdresi(href, damga){
+  const u = new URL(href);
+  u.searchParams.set('yenile', String(damga));
+  return u.toString();
+}
+// Yenilemeden gelen ?yenile=... adres çubuğunda kalmasın (yer imi temiz kalsın)
+function yenileIzininiTemizle(){
+  try{
+    const u = new URL(location.href);
+    if(!u.searchParams.has('yenile')) return;
+    u.searchParams.delete('yenile');
+    history.replaceState(null, '', u.toString());
+  }catch(e){ /* önemli değil */ }
+}
+
 /* ---------- Atama (bir kişinin bir günü) kontrolleri ---------- */
 
 // Boş/atanmamış bir gün

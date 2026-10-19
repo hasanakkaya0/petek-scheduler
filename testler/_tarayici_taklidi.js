@@ -20,4 +20,4 @@ global.alert=(m)=>console.log('  [ALERT]',m);
 global.confirm=(m)=>{ console.log('  [CONFIRM]',String(m).split('\n')[0].slice(0,70)); return true; };
 global.prompt=()=>null;
 global.FileReader=function(){}; global.Blob=function(){};
-global.URL={createObjectURL(){return''},revokeObjectURL(){}};
+Object.assign(global.URL, {createObjectURL(){return''}, revokeObjectURL(){}});   // Node'un URL sinifini EZME (new URL kullaniliyor)
