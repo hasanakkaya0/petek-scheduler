@@ -15,7 +15,7 @@ if (!fs.existsSync(GECICI)) fs.mkdirSync(GECICI);
 
 // ---- 1) Uygulamadaki JS yukleme sirasini index.html'den oku ----
 const html = fs.readFileSync(path.join(APP, 'index.html'), 'utf8');
-const disDosyalar = [...html.matchAll(/src="(js\/[^"]+)"/g)].map(m => path.join(APP, m[1]));
+const disDosyalar = [...html.matchAll(/src="(js\/[^"]+)"/g)].map(m => path.join(APP, m[1].split("?")[0]));
 const inlineJS = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n');
 
 // ---- 2) HTML'deki tum element id'lerini topla ----

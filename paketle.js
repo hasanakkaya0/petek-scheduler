@@ -27,7 +27,7 @@ try {
   const cssEtiketleri = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)];
   if (!cssEtiketleri.length) throw new Error('index.html icinde CSS baglantisi bulunamadi.');
   for (const m of cssEtiketleri) {
-    const yol = path.join(APP, m[1]);
+    const yol = path.join(APP, m[1].split("?")[0]);
     if (!fs.existsSync(yol)) throw new Error('Eksik dosya: ' + m[1]);
     html = html.replace(m[0], '<style>\n' + fs.readFileSync(yol, 'utf8') + '\n</style>');
   }
@@ -38,7 +38,7 @@ try {
   let sayac = 0;
   for (const m of jsEtiketleri) {
     if (/^https?:/.test(m[1])) continue;   // dis kutuphane (Firebase CDN) — oldugu gibi birak
-    const yol = path.join(APP, m[1]);
+    const yol = path.join(APP, m[1].split("?")[0]);
     if (!fs.existsSync(yol)) throw new Error('Eksik dosya: ' + m[1]);
     const kod = fs.readFileSync(yol, 'utf8');
     html = html.replace(m[0], '<script>\n/* ===== ' + m[1] + ' ===== */\n' + kod + '\n</script>');
