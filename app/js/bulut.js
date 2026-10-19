@@ -175,13 +175,15 @@ const Bulut = (function(){
         '<h2>Petek Çalışma Programı</h2>' +
         '<p>Giriş yap; bütün bilgisayarlar aynı veriyi görür.</p>' +
         '<form id="bulutForm" novalidate>' +
-        '<input type="text" id="bulutKullanici" placeholder="Kullanıcı adı" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false">' +
-        '<input type="password" id="bulutSifre" placeholder="Şifre" autocomplete="current-password">' +
+        '<label>Kullanıcı adı<input type="text" id="bulutKullanici" autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"></label>' +
+        '<label>Şifre<input type="password" id="bulutSifre" autocomplete="current-password"></label>' +
+        '<label class="bulut-goster"><input type="checkbox" id="bulutGoster"> Şifreyi göster</label>' +
         '<button type="submit" class="primary" id="bulutGiris">Giriş yap</button>' +
         '</form>' +
         '<p class="bulut-hata" id="bulutHata" role="alert"></p>');
       const hata = t => { el.querySelector('#bulutHata').textContent = t || ''; };
       const kutu = el.querySelector('#bulutKullanici');
+      el.querySelector('#bulutGoster').onchange = ev => { el.querySelector('#bulutSifre').type = ev.target.checked ? 'text' : 'password'; };
       setTimeout(() => kutu && kutu.focus(), 50);
       el.querySelector('#bulutForm').onsubmit = async ev => {
         ev.preventDefault();
