@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Petek Çalışma Programı v1.2</title>
-<link rel="stylesheet" href="css/styles.css?v=202610192358">
+<link rel="stylesheet" href="css/styles.css?v=202610200021">
 </head>
 <body>
 <div class="wrap">
@@ -20,6 +20,11 @@
     </div>
   </header>
 
+  <div class="yeni-surum" id="yeniSurum" role="status" hidden>
+    🆕 Programın yeni sürümü hazır.
+    <button class="yenile-btn" id="btnYeniSurum">↻ Yenile</button>
+  </div>
+
   <div class="weeknav">
     <button class="nav" id="prevWeek">‹</button>
     <span class="range" id="weekRange">—</span>
@@ -31,9 +36,16 @@
       <button class="tool" id="btnLock">🔒 Haftayı kilitle</button>
       <button class="tool" id="btnGenerate" style="border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">✨ Haftayı otomatik oluştur</button>
       <button class="tool" id="btnPng">🖼 Görsel indir</button>
-      <button class="tool" id="btnBackup">⤓ Yedek al (JSON)</button>
-      <button class="tool" id="btnRestore">⤒ Yedekten yükle</button>
-      <button class="tool" id="btnReset" style="border-color:var(--red); color:var(--red);">🗑 Haftayı sıfırla</button>
+      <div class="menu-sarmal">
+        <button class="tool" id="btnDahaFazla" aria-haspopup="true" aria-expanded="false" title="Yedek, geri yükleme ve diğer işlemler">⋯ Daha fazla</button>
+        <div class="menu-kutu" id="dahaFazlaMenu" hidden>
+          <button class="menu-oge" id="btnBackup">⤓ Yedek al (JSON)</button>
+          <button class="menu-oge" id="btnRestore">⤒ Yedekten yükle</button>
+          <button class="menu-oge" id="btnOtoKopya" hidden>🕘 Otomatik kopyalar (son 14 gün)</button>
+          <div class="menu-ayrac"></div>
+          <button class="menu-oge tehlike" id="btnReset">🗑 Haftayı sıfırla</button>
+        </div>
+      </div>
       <input type="file" id="fileRestore" accept="application/json,.json" hidden />
     </div>
   </div>
@@ -147,6 +159,19 @@
   <footer class="note">
     <span id="footNote">—</span>
   </footer>
+</div>
+
+<!-- Otomatik kopyalar (bulut) -->
+<div class="overlay" id="kopyaOverlay">
+  <div class="modal">
+    <h3>Otomatik kopyalar</h3>
+    <div class="sub">Her gün programın ilk açılışında bütün verinin kopyası alınır; son 14 gün saklanır.</div>
+    <div id="kopyaListe"></div>
+    <div class="hint">Bir kopyaya dönersen o günden sonraki değişiklikler kaybolur; dönmeden önce şu anki hâlin güvenlik kopyası alınır.</div>
+    <div class="modal-actions">
+      <button class="ghost" id="kopyaKapat">Kapat</button>
+    </div>
+  </div>
 </div>
 
 <!-- Tek hücre düzenleyici -->
@@ -455,52 +480,54 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js?v=202610192358"></script>
+<script src="js/firebase-config.js?v=202610200021"></script>
 
 <!-- Yardımcı fonksiyonlar (tarih/saat hesapları) — ana koddan ÖNCE yüklenmeli -->
-<script src="js/utils.js?v=202610192358"></script>
+<script src="js/utils.js?v=202610200021"></script>
 
 <!-- Dükkân saatleri paneli (8 numaralı panel) -->
-<script src="js/shop-hours.js?v=202610192358"></script>
+<script src="js/shop-hours.js?v=202610200021"></script>
 
 <!-- Veri kaydetme / yükleme -->
-<script src="js/storage.js?v=202610192358"></script>
+<script src="js/storage.js?v=202610200021"></script>
 
 <!-- Bulut senkronu (Firebase) — store buna yönlenir -->
-<script src="js/bulut.js?v=202610192358"></script>
+<script src="js/bulut.js?v=202610200021"></script>
 
 <!-- Birlikte çalışma: "başka bilgisayarda da bu hafta açık" uyarısı -->
-<script src="js/birlikte.js?v=202610192358"></script>
+<script src="js/oto-kopya.js?v=202610200021"></script>
+<script src="js/surum-kontrol.js?v=202610200021"></script>
+<script src="js/birlikte.js?v=202610200021"></script>
 
 <!-- Örnek veri (yalnızca ?deneme modunda düğmeyle) -->
-<script src="js/ornek-veri.js?v=202610192358"></script>
+<script src="js/ornek-veri.js?v=202610200021"></script>
 
 <!-- Sekmeler (Çizelge / Sayaçlar / Ayarlar) -->
-<script src="js/sekmeler.js?v=202610192358"></script>
+<script src="js/sekmeler.js?v=202610200021"></script>
 
 <!-- Görsel indirme (PNG) -->
-<script src="js/export-png.js?v=202610192358"></script>
+<script src="js/export-png.js?v=202610200021"></script>
 
 <!-- Borç / Alacak Sayacı (6 numaralı panel) -->
-<script src="js/ledger.js?v=202610192358"></script>
+<script src="js/ledger.js?v=202610200021"></script>
 
 <!-- Yıllık İzin Sayacı (7 numaralı panel) -->
-<script src="js/yillik-izin.js?v=202610192358"></script>
+<script src="js/yillik-izin.js?v=202610200021"></script>
 
 <!-- Otomatik haftalık liste oluşturucu ("Haftayı otomatik oluştur" butonu) -->
-<script src="js/generator.js?v=202610192358"></script>
+<script src="js/generator.js?v=202610200021"></script>
 
 <!-- Ayar panelleri: Personel (3) / Bölümler (4) / Kapsama kuralları (5) -->
-<script src="js/settings-panels.js?v=202610192358"></script>
+<script src="js/settings-panels.js?v=202610200021"></script>
 
 <!-- Ekran çizimi: üst gezinme + haftalık çizelge tablosu -->
-<script src="js/render.js?v=202610192358"></script>
+<script src="js/render.js?v=202610200021"></script>
 
 <!-- Düzenleme pencereleri: tek hücre + haftalık şablon -->
-<script src="js/modals.js?v=202610192358"></script>
+<script src="js/modals.js?v=202610200021"></script>
 
 <!-- Kapsama doğrulama ve öneriler (2 numaralı panel) -->
-<script src="js/validation.js?v=202610192358"></script>
+<script src="js/validation.js?v=202610200021"></script>
 
 <script>
 /* ---------------------------------------------------------------------
@@ -822,6 +849,23 @@ document.getElementById('btnReset').addEventListener('click', async () => {
   renderGenReport(null);
 });
 
+/* Bir yedek nesnesini ({settings, weeks}) uygular: kaydeder, ekrana yansıtır.
+   birebir=true (otomatik kopyaya DÖNÜŞ): yedekte olmayan haftalar da silinir — gerçek geri dönüş.
+   birebir=false (dosyadan yükleme): yalnızca üzerine yazar, fazlalık haftalara dokunmaz (eski davranış). */
+async function yedegiUygula(obj, secenek){
+  if(obj.settings) await store.set('settings', JSON.stringify(obj.settings));
+  const yeniAnahtarlar = new Set();
+  if(obj.weeks){ for(const [k, v] of Object.entries(obj.weeks)){ yeniAnahtarlar.add(k); await store.set(k, JSON.stringify(v)); } }
+  if(secenek && secenek.birebir && bulutAktif()){
+    for(const k of await Bulut.listKeys('week:')) if(!yeniAnahtarlar.has(k)) await Bulut.sil(k);
+  }
+  await loadSettings();
+  haftayaGoreKadroyuTazele();
+  await loadWeek();
+  ensureWeekPeople();
+  renderAll();
+}
+
 document.getElementById('btnBackup').addEventListener('click', async () => {
   const data = await collectBackup();
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
@@ -844,13 +888,7 @@ document.getElementById('fileRestore').addEventListener('change', (e) => {
       if(!confirm('Bu dosya bu uygulamanın yedeği gibi görünmüyor. Yine de yüklemeyi dene?')) { e.target.value=''; return; }
     }
     try{
-      if(obj.settings) await store.set('settings', JSON.stringify(obj.settings));
-      if(obj.weeks){ for(const [k,v] of Object.entries(obj.weeks)){ await store.set(k, JSON.stringify(v)); } }
-      await loadSettings();
-      haftayaGoreKadroyuTazele();
-      await loadWeek();
-      ensureWeekPeople();
-      renderAll();
+      await yedegiUygula(obj);
       alert('Yedek yüklendi.');
     }catch(err){ alert('Yükleme sırasında hata oluştu.'); }
     e.target.value = '';
@@ -859,6 +897,21 @@ document.getElementById('fileRestore').addEventListener('change', (e) => {
 });
 
 document.getElementById('btnUndo').addEventListener('click', geriAl);
+
+// ⋯ Daha fazla menüsü: nadir kullanılan düğmeler (yedek, yükle, sıfırla) burada durur
+(function dahaFazlaMenusu(){
+  const dugme = document.getElementById('btnDahaFazla'), kutu = document.getElementById('dahaFazlaMenu');
+  if(!dugme || !kutu) return;
+  const kapat = () => { kutu.hidden = true; dugme.setAttribute('aria-expanded', 'false'); };
+  dugme.addEventListener('click', e => {
+    e.stopPropagation();
+    kutu.hidden = !kutu.hidden;
+    dugme.setAttribute('aria-expanded', kutu.hidden ? 'false' : 'true');
+  });
+  kutu.addEventListener('click', () => setTimeout(kapat, 0));          // bir öğeye basınca menü kapanır
+  document.addEventListener('click', e => { if(!kutu.hidden && !kutu.contains(e.target)) kapat(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') kapat(); });
+})();
 
 // ↻ Yenile — ana sayfayı önbellekten değil sunucudan alır (en yeni sürüm gelir)
 document.getElementById('btnYenile').addEventListener('click', () => { location.href = yenileAdresi(location.href, Date.now()); });
@@ -984,9 +1037,16 @@ async function yerelVeriyiBuluttaAktar(){
     catch(e){ return; }          // engel ekranı gösterildi — eski/boş veriyle devam edip bulutu ezme
     Bulut.uzakDegisince = uzakDegisimiKaydet;
     if(typeof Birlikte !== 'undefined') Birlikte.baslat();
+    // Otomatik kopyalar: menüdeki düğme açılır, günlük kopya arka planda alınır (ekranı bekletmez)
+    const btnOto = document.getElementById('btnOtoKopya');
+    if(btnOto){ btnOto.hidden = false; btnOto.addEventListener('click', () => OtoKopya.arayuzuAc()); }
+    const btnKapat = document.getElementById('kopyaKapat');
+    if(btnKapat) btnKapat.addEventListener('click', () => document.getElementById('kopyaOverlay').classList.remove('show'));
+    setTimeout(() => { OtoKopya.gunluk().catch(e => console.warn('Günlük kopya alınamadı:', e && e.message)); }, 5000);
     await yerelVeriyiBuluttaAktar();
     renderFooter();
   }
+  if(typeof SurumKontrol !== 'undefined') SurumKontrol.baslat();
   await loadSettings();
   haftayaGoreKadroyuTazele();          // kadro, açılışta da haftaya göre süzülür
   await loadWeek();

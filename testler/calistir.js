@@ -51,6 +51,8 @@ const testler = [
   ['BULUT SENKRONU (Firebase, sahte sunucu)', 'test_bulut.js'],
   ['BIRLIKTE CALISMA UYARISI',        'test_birlikte.js'],
   ['YENILE DUGMESI',                  'test_yenile.js'],
+  ['OTOMATIK KOPYALAR (gunluk, geri donus)', 'test_oto_kopya.js'],
+  ['YENI SURUM SERIDI',               'test_surum_kontrol.js'],
   ['ORNEK VERI (deneme modu)',       'test_ornek_veri.js'],
   ['ANA/YEDEK GOREV ONCELIGI',       'test_ana_yedek_gorev.js'],
   ['ERKEN CIKIS = KAPANISA KALMAMA', 'test_erken_cikis.js'],

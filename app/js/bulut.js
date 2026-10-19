@@ -100,6 +100,13 @@ const Bulut = (function(){
   // ("presence:" kayıtları — kim hangi haftayı açtı — gerçek veri sayılmaz)
   api.bosMu = () => [...veri.keys()].filter(k => !k.startsWith('presence:')).length === 0;
 
+  // Otomatik kopyalar (js/oto-kopya.js) — ayrı koleksiyon
+  api.kopyaYaz = (id, data) => Promise.resolve(adapter.kopyaYaz(id, data));
+  api.kopyaOku = id => Promise.resolve(adapter.kopyaOku(id));
+  api.kopyaVarMi = id => Promise.resolve(adapter.kopyaVarMi(id));
+  api.kopyaListe = () => Promise.resolve(adapter.kopyaListe());
+  api.kopyaSil = id => Promise.resolve(adapter.kopyaSil(id)).catch(() => {});
+
   // Bir kaydı sil (bellekten + buluttan)
   api.sil = async function(key){
     veri.delete(key);
@@ -115,6 +122,7 @@ const Bulut = (function(){
     try{ db.settings({ignoreUndefinedProperties: true}); }catch(e){ /* zaten ayarlı */ }
     const kalici = db.enablePersistence({synchronizeTabs: true}).catch(() => { /* desteklenmiyor: yalnız çevrimiçi */ });
     const kol = db.collection('workspaces').doc('petek').collection('kv');
+    const kolKopya = db.collection('workspaces').doc('petek').collection('yedekler');   // otomatik kopyalar (js/oto-kopya.js)
     return {
       auth, kalici,
       email: () => (auth.currentUser && auth.currentUser.email) || '',
@@ -136,6 +144,21 @@ const Bulut = (function(){
         });
       },
       sil(id){ return kol.doc(id).delete(); },
+      // --- otomatik kopyalar: ana veriden AYRI koleksiyon (normal açılışta okunmaz) ---
+      kopyaYaz(id, data){
+        return kolKopya.doc(id).set(Object.assign({}, data, {
+          olusturma: fb.firestore.FieldValue.serverTimestamp(),
+          by: (auth.currentUser && auth.currentUser.email) || '',
+        }));
+      },
+      async kopyaOku(id){ const d = await kolKopya.doc(id).get(); return d.exists ? d.data() : null; },
+      async kopyaVarMi(id){ const d = await kolKopya.doc(id).get(); return d.exists; },
+      async kopyaListe(){
+        const snap = await kolKopya.get();
+        return snap.docs.map(d => { const x = d.data(); return {id: d.id, gun: x.gun, etiket: x.etiket, hafta: x.hafta, boyut: x.boyut}; })
+          .sort((a, b) => b.id.localeCompare(a.id)).slice(0, 40);
+      },
+      kopyaSil(id){ return kolKopya.doc(id).delete(); },
     };
   }
 

@@ -415,3 +415,33 @@ td.cell.suruk-hedef{
 .yenile-btn{border:1px solid var(--paper-line); background:#fff; color:var(--ink); font:inherit; font-size:12.5px; font-weight:600;
   padding:5px 11px; border-radius:7px; cursor:pointer; white-space:nowrap;}
 .yenile-btn:hover{background:#F3EEE2; border-color:var(--ink-soft);}
+
+/* ---------- ⋯ Daha fazla menüsü ---------- */
+.menu-sarmal{position:relative;}
+.menu-kutu{position:absolute; right:0; top:calc(100% + 6px); z-index:60; min-width:250px; background:#fff;
+  border:1px solid var(--paper-line); border-radius:10px; box-shadow:0 8px 24px rgba(38,34,32,.18); padding:6px;}
+.menu-kutu[hidden]{display:none;}
+.menu-oge{display:block; width:100%; text-align:left; border:none; background:none; font:inherit; font-size:13.5px;
+  padding:9px 12px; border-radius:7px; cursor:pointer; color:var(--ink);}
+.menu-oge[hidden]{display:none;}
+.menu-oge:hover{background:#F3EEE2;}
+.menu-oge.tehlike{color:var(--red);}
+.menu-oge.tehlike:hover{background:#F9E3DF;}
+.menu-ayrac{height:1px; background:var(--paper-line); margin:5px 4px;}
+
+/* ---------- Geniş ekranda çizelge: daha fazla sütun sığsın, gün ve akşam sorumlusu sütunu yapışık kalsın ---------- */
+.wrap{max-width:min(1900px, 98vw);}
+.hint{max-width:1000px;}
+table.grid thead th{min-width:104px;}
+#gridTable th.corner, #gridTable td.daycol{position:sticky; left:0; z-index:3; background:var(--card); box-shadow:2px 0 0 var(--ink);}
+#gridTable th.supcol, #gridTable td.supcell{position:sticky; right:0; z-index:2; background:var(--card); box-shadow:-2px 0 0 var(--ink);}
+
+/* ---------- "Yeni sürüm hazır" şeridi ---------- */
+.yeni-surum{background:#E3F1E7; color:#1E4D2B; border:1px solid #9CC9A8; border-radius:8px; padding:9px 14px; margin:12px 0 0;
+  font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.yeni-surum[hidden]{display:none;}
+
+/* ---------- Otomatik kopyalar penceresi ---------- */
+.kopya-satir{display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--paper-line); flex-wrap:wrap;}
+.kopya-bilgi{flex:1; min-width:220px; font-size:13px;}
+#kopyaListe{max-height:50vh; overflow-y:auto; margin-bottom:10px;}
