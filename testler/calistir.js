@@ -48,6 +48,7 @@ const testler = [
   ['YILLIK IZIN SAYACI',             'test_yillik_izin.js'],
   ['DUKKAN SAATLERI (tarihli duzen)', 'test_dukkan_saatleri.js'],
   ['SEKMELER (Cizelge/Sayaclar/Ayarlar)', 'test_sekmeler.js'],
+  ['BULUT SENKRONU (Firebase, sahte sunucu)', 'test_bulut.js'],
   ['ANA/YEDEK GOREV ONCELIGI',       'test_ana_yedek_gorev.js'],
   ['ERKEN CIKIS = KAPANISA KALMAMA', 'test_erken_cikis.js'],
   ['KAPANIS SINIRI + GRUP',          'test_kapanis_siniri.js'],

@@ -382,3 +382,12 @@ td.cell.suruk-hedef{
 @media (max-width:560px){
   .sekme{flex:1; padding:11px 8px; font-size:13px; text-align:center;}
 }
+
+/* ---------- Bulut giriş / engel ekranı ---------- */
+.bulut-ekran{position:fixed; inset:0; z-index:1000; background:var(--paper); display:flex; align-items:center; justify-content:center; padding:20px;}
+.bulut-kutu{background:var(--card); border:1px solid var(--paper-line); border-radius:12px; box-shadow:var(--shadow); padding:28px 26px; max-width:420px; width:100%; text-align:center;}
+.bulut-kutu h2{font-family:Georgia,serif; font-size:21px; margin:0 0 10px;}
+.bulut-kutu p{font-size:14px; color:var(--ink-soft); line-height:1.5; margin:0 0 18px;}
+.bulut-kutu .bulut-hata{color:var(--red); font-size:13px; min-height:18px; margin:12px 0 0;}
+.bulut-kutu .bulut-dugmeler{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+.linkbtn{border:none; background:none; color:var(--burgundy); cursor:pointer; font:inherit; font-size:inherit; text-decoration:underline; padding:0;}

@@ -104,7 +104,8 @@ function renderLegend(){
 }
 function renderFooter(){
   const el = document.getElementById('footNote');
-  if(hasCloud) el.innerHTML = 'Veriler bu sohbette (Claude) saklanır. Cihazlar arası taşımak için <b>Yedek al (JSON)</b> ile indirip, indirdiğin dosyada <b>Yedekten yükle</b> ile geri alabilirsin.';
+  if(typeof Bulut !== 'undefined' && Bulut.aktif()) el.innerHTML = 'Veriler <b>bulutta</b> (Firebase) saklanır — izin verilen hesaplarla giriş yapan her bilgisayar aynı veriyi görür, ayrıca yedek göndermeye gerek yok. Yine de ara sıra <b>Yedek al (JSON)</b> ile bir kopya indirmen iyi olur.';
+  else if(hasCloud) el.innerHTML = 'Veriler bu sohbette (Claude) saklanır. Cihazlar arası taşımak için <b>Yedek al (JSON)</b> ile indirip, indirdiğin dosyada <b>Yedekten yükle</b> ile geri alabilirsin.';
   else if(hasLocal) el.innerHTML = 'Veriler bu tarayıcıda (bu cihazda) saklanır — dosyayı çift tıklayıp açtığında da kayıt tutulur. Başka bir cihaza taşımak için <b>Yedek al (JSON)</b> kullan.';
   else el.innerHTML = 'Bu ortamda kalıcı kayıt yapılamıyor — değişiklikler sadece bu oturumda geçerli. Kaybetmemek için <b>Yedek al (JSON)</b> ile indir.';
 }

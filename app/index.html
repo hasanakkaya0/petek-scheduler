@@ -446,6 +446,12 @@
   </div>
 </div>
 
+<!-- Bulut (Firebase) kütüphaneleri — yüklenemezse program yerel modda çalışır -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+
 <!-- Yardımcı fonksiyonlar (tarih/saat hesapları) — ana koddan ÖNCE yüklenmeli -->
 <script src="js/utils.js"></script>
 
@@ -454,6 +460,9 @@
 
 <!-- Veri kaydetme / yükleme -->
 <script src="js/storage.js"></script>
+
+<!-- Bulut senkronu (Firebase) — store buna yönlenir -->
+<script src="js/bulut.js"></script>
 
 <!-- Sekmeler (Çizelge / Sayaçlar / Ayarlar) -->
 <script src="js/sekmeler.js"></script>
@@ -696,6 +705,10 @@ async function loadWeek(){
     try{ weekData = JSON.parse(r.value); markSaved(true); undoTemizle(); return; }catch(e){}
   }
   weekData = emptyWeek();
+  // BULUT: boş haftayı hemen yazma. İki bilgisayar aynı haftaya bakarken biri
+  // (veri henüz gelmeden) boş hafta yazıp dolu olanı ezmesin. Hafta ilk
+  // düzenlemede/oluşturmada zaten kaydedilir (scheduleSave).
+  if(bulutAktif()){ markSaved(true); undoTemizle(); return; }
   // yeni oluşturulan boş haftayı hemen kaydet
   markSaved(false);
   const res = await store.set(key, JSON.stringify(weekData));
@@ -898,9 +911,61 @@ function renderAll(){
   renderShopHours();
 }
 
+/* ---------------------------------------------------------------------
+   BULUT: diğer bilgisayardan gelen değişiklik
+   Pencere açıkken (hücre/kişi düzenleniyorken) ekran yenilenmez, kapanınca uygulanır.
+--------------------------------------------------------------------- */
+const uzakBekleyen = new Set();
+let uzakZamanlayici = null;
+function uzakDegisimiUygula(){
+  if(document.querySelector('.overlay.show')){ uzakZamanlayici = setTimeout(uzakDegisimiUygula, 2500); return; }
+  const anahtarlar = [...uzakBekleyen]; uzakBekleyen.clear();
+  (async () => {
+    if(anahtarlar.includes('settings')){ await loadSettings(); haftayaGoreKadroyuTazele(); }
+    if(anahtarlar.includes('settings') || anahtarlar.includes('week:' + fmtDate(currentMonday))){
+      await loadWeek(); ensureWeekPeople();
+    }
+    renderAll();
+    bildirimGoster('Başka bir bilgisayardaki değişiklik alındı.');
+  })();
+}
+function uzakDegisimiKaydet(anahtarlar){
+  anahtarlar.forEach(k => uzakBekleyen.add(k));
+  clearTimeout(uzakZamanlayici);
+  uzakZamanlayici = setTimeout(uzakDegisimiUygula, 400);
+}
+
+/* Bulut boşsa ve bu tarayıcıda eski (yerel) veri varsa buluta taşımayı teklif et. */
+async function yerelVeriyiBuluttaAktar(){
+  if(!Bulut.bosMu()) return;
+  let yerel = [];
+  try{
+    for(let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('petek:') && (k === 'petek:settings' || k.startsWith('petek:week:'))) yerel.push(k);
+    }
+  }catch(e){ return; }
+  if(!yerel.length) return;
+  const NL = String.fromCharCode(10);
+  const soru = ['Bulut henüz boş, ama bu bilgisayarda kayıtlı eski veri var (' + yerel.length + ' kayıt).', '',
+    'Bu veriler buluta aktarılsın mı?', '',
+    '» TAMAM = aktar (diğer bilgisayarlar da görür)',
+    '» İPTAL = aktarma (boş başlar; istersen "Yedekten yükle" kullanırsın)'].join(NL);
+  if(!confirm(soru)) return;
+  for(const k of yerel) await Bulut.set(k.slice('petek:'.length), localStorage.getItem(k));
+  alert('Veriler buluta aktarıldı.');
+}
+
 (async function init(){
   renderLegend();
   renderFooter();
+  if(typeof Bulut !== 'undefined' && Bulut.yapilandirildi()){
+    try{ await Bulut.baglan(); }
+    catch(e){ return; }          // engel ekranı gösterildi — eski/boş veriyle devam edip bulutu ezme
+    Bulut.uzakDegisince = uzakDegisimiKaydet;
+    await yerelVeriyiBuluttaAktar();
+    renderFooter();
+  }
   await loadSettings();
   haftayaGoreKadroyuTazele();          // kadro, açılışta da haftaya göre süzülür
   await loadWeek();

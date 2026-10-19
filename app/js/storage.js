@@ -39,18 +39,25 @@ if(DENEME_MODU){
   });
 }
 
+// Bulut (Firebase) açık mı? Açıksa bütün okuma/yazma Firestore'a gider (js/bulut.js).
+// Kapalıysa (dosya olarak açıldı, ?deneme, config boş) eski yerel depolama çalışır.
+function bulutAktif(){ return typeof Bulut !== 'undefined' && Bulut.aktif(); }
+
 const store = {
   async get(key){
+    if(bulutAktif()) return Bulut.get(key);
     if(hasCloud){ try{ return await window.storage.get(key, false); }catch(e){ return null; } }
     if(hasLocal){ const v = localStorage.getItem(PREFIX+key); return (v!=null) ? {value:v} : null; }
     return null;
   },
   async set(key, val){
+    if(bulutAktif()) return Bulut.set(key, val);
     if(hasCloud){ try{ return await window.storage.set(key, val, false); }catch(e){ return null; } }
     if(hasLocal){ try{ localStorage.setItem(PREFIX+key, val); return {value:val}; }catch(e){ return null; } }
     return null;
   },
   async listKeys(prefix){
+    if(bulutAktif()) return Bulut.listKeys(prefix);
     if(hasCloud){ try{ const r = await window.storage.list(prefix, false); return (r && r.keys) ? r.keys : []; }catch(e){ return []; } }
     if(hasLocal){
       const out = [];
@@ -75,6 +82,15 @@ function markSaved(state){
   const el = document.getElementById('saveBadge');
   if(!canPersist){ el.textContent = 'kayıt yok (oturumluk)'; el.className='savebadge warn'; return; }
   if(state === 'fail'){ el.textContent = '⚠ kaydedilemedi — bağlantıyı/depolamayı kontrol edin'; el.className='savebadge warn'; return; }
+  if(bulutAktif()){
+    // Bulut: yazma hemen belleğe ve Firestore'un yerel kuyruğuna gider. İnternet yoksa
+    // kuyrukta bekler, bağlantı gelince gönderilir — kullanıcıya bunu açıkça söyle.
+    if(!state){ el.textContent = 'kaydediliyor…'; el.className = 'savebadge'; return; }
+    const cevrimdisi = !Bulut.cevrimici();
+    el.textContent = cevrimdisi ? '⚠ çevrimdışı — bağlanınca buluta gönderilecek' : 'kaydedildi (bulut)';
+    el.className = 'savebadge' + (cevrimdisi ? ' warn' : ' ok');
+    return;
+  }
   el.textContent = state ? (hasCloud ? 'kaydedildi (buluta)' : 'kaydedildi (bu cihaz)') : 'kaydediliyor…';
   el.className = 'savebadge' + (state ? ' ok' : '');
 }

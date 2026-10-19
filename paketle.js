@@ -37,6 +37,7 @@ try {
   if (!jsEtiketleri.length) throw new Error('index.html icinde JS baglantisi bulunamadi.');
   let sayac = 0;
   for (const m of jsEtiketleri) {
+    if (/^https?:/.test(m[1])) continue;   // dis kutuphane (Firebase CDN) — oldugu gibi birak
     const yol = path.join(APP, m[1]);
     if (!fs.existsSync(yol)) throw new Error('Eksik dosya: ' + m[1]);
     const kod = fs.readFileSync(yol, 'utf8');
