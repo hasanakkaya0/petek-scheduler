@@ -97,7 +97,14 @@ const Bulut = (function(){
   };
 
   // Bulutta hiç kayıt yok mu? (ilk kurulum / taşıma kararı için)
-  api.bosMu = () => veri.size === 0;
+  // ("presence:" kayıtları — kim hangi haftayı açtı — gerçek veri sayılmaz)
+  api.bosMu = () => [...veri.keys()].filter(k => !k.startsWith('presence:')).length === 0;
+
+  // Bir kaydı sil (bellekten + buluttan)
+  api.sil = async function(key){
+    veri.delete(key);
+    return Promise.resolve(adapter.sil(key)).catch(() => {});
+  };
 
   /* ---------- FİREBASE KÖPRÜSÜ ---------- */
   function firebaseAdapter(cfg){

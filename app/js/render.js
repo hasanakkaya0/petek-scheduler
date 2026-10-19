@@ -97,6 +97,7 @@ function renderHeader(){
   document.getElementById('weekRange').textContent = `${fmt(currentMonday)} – ${fmt(sunday)} ${sunday.getFullYear()}`;
   renderWeekLock();
   renderPinBadge();
+  if(typeof Birlikte !== 'undefined') Birlikte.hafta(fmtDate(currentMonday));   // bulut: bu haftayı açtığımızı duyur
 }
 function renderLegend(){
   const el = document.getElementById('spineLegend');

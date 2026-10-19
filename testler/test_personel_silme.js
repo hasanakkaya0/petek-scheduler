@@ -46,11 +46,13 @@
   K('GECMIS haftalarda sorumlu atamasi kalmadi', kalanSup===0);
 
   // --- Ayrilan kisi ana listede gorunmemeli ---
-  const ayr = PEOPLE.find(p=>p.hasRow!==false);
+  // Gercek veride zaten ayrilmis biri olabilir: once kac kisi ayrilmis say, sonra YENI birini ayir.
+  const oncekiAyrilan = PEOPLE.filter(p=>p.endWeek).length;
+  const ayr = PEOPLE.find(p=>p.hasRow!==false && !p.endWeek);
   ayr.endWeek = fmtDate(addDays(currentMonday,-7));
   const ayrilanlar = PEOPLE.filter(p=>p.endWeek);
   const aktifler = PEOPLE.filter(p=>!p.endWeek);
-  K('ayrilan kisi ANA listeden ayrildi', ayrilanlar.length===1 && !aktifler.includes(ayr));
+  K('ayrilan kisi ANA listeden ayrildi', ayrilanlar.length===oncekiAyrilan+1 && !aktifler.includes(ayr));
   K('ayrilan kisi PEOPLE icinde duruyor (gecmis icin)', PEOPLE.includes(ayr));
   delete ayr.endWeek;
 
