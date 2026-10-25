@@ -121,6 +121,22 @@
   K('render.js icinde ikinci bir dowDefaultHours tanimi yok', !/function dowDefaultHours/.test(rnd));
   K('8. panel (Dukkan saatleri) sayfada var', /id="shopHoursBox"/.test(idx) && /shop-hours\.js/.test(idx));
 
+  // --- 10) 'Bir oncekiyle ayni' ipucu (ayni duzen iki kez eklenirse) ---
+  const kutu = {innerHTML: ''}; const eskiGet = document.getElementById;
+  document.getElementById = id => id === 'shopHoursBox' ? kutu : eskiGet(id);
+  const kasim = JSON.parse(JSON.stringify(DEFAULT_SHOP_HOURS[1]));
+  SHOP_HOURS = [JSON.parse(JSON.stringify(DEFAULT_SHOP_HOURS[0])), kasim, {from: '2026-11-02', days: JSON.parse(JSON.stringify(kasim.days))}];
+  K('duzenlerAyniMi: birebir ayni iki duzen ayni sayilir', duzenlerAyniMi(SHOP_HOURS[1], SHOP_HOURS[2]) === true);
+  K('duzenlerAyniMi: farkli duzenler farkli sayilir (ilk duzen vs Kasim)', duzenlerAyniMi(SHOP_HOURS[0], SHOP_HOURS[1]) === false);
+  renderShopHours();
+  K('ayni duzende uyari cikar (02.11 = 01.11)', (kutu.innerHTML.match(/class="sh-ayni"/g) || []).length === 1 && /Bir öncekiyle aynı/.test(kutu.innerHTML));
+  SHOP_HOURS[2].days[5] = {open: '09:00', close: '20:00'};     // Cumartesi'yi degistirince artik gereksiz degil
+  renderShopHours();
+  K('bir gun bile farkliysa uyari CIKMAZ', (kutu.innerHTML.match(/class="sh-ayni"/g) || []).length === 0);
+  SHOP_HOURS = JSON.parse(JSON.stringify(DEFAULT_SHOP_HOURS)); renderShopHours();
+  K('varsayilan iki duzende (farkli) uyari yok', (kutu.innerHTML.match(/class="sh-ayni"/g) || []).length === 0);
+  document.getElementById = eskiGet;
+
   console.log('');
   console.log('  Sonuc: ' + gecen + ' gecti, ' + kalan + ' kaldi');
 })();

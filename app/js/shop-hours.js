@@ -36,10 +36,17 @@ function dukkanSaatleriniDogrula(liste){
   return temiz;
 }
 
+// İki düzenin 7 günü de aynı mı? (aynıysa sonraki düzen gereksizdir: hiçbir şeyi değiştirmez)
+function duzenlerAyniMi(a, b){
+  return !!a && !!b && a.days.every((g, i) => g.open === b.days[i].open && g.close === b.days[i].close);
+}
+
 function renderShopHours(){
   const kutu = document.getElementById('shopHoursBox');
   if(!kutu) return;
   kutu.innerHTML = SHOP_HOURS.map((e, ei) => {
+    const ayniUyari = (ei > 0 && duzenlerAyniMi(SHOP_HOURS[ei - 1], e))
+      ? `<span class="sh-ayni" title="Bu düzen bir öncekiyle birebir aynı, hiçbir şeyi değiştirmiyor">⚠ Bir öncekiyle aynı — gereksiz, silebilirsin (✕)</span>` : '';
     const baslik = ei === 0
       ? `<b>İlk düzen</b> <span style="color:var(--ink-soft); font-size:11.5px;">— en baştan beri geçerli</span>`
       : `<b>Geçerli olduğu ilk tarih:</b>
@@ -53,7 +60,7 @@ function renderShopHours(){
       </tr>`).join('');
     return `<div class="sh-kart" style="border:1px solid #D6D0C2; border-radius:10px; padding:12px 14px; margin-bottom:12px; background:#fff;">
       <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;">
-        ${baslik}<span style="flex:1"></span>
+        ${baslik}${ayniUyari}<span style="flex:1"></span>
         <button class="tool sh-yay" data-e="${ei}" style="font-size:12px;">Pazartesi saatini hafta içine (Pzt–Cum) uygula</button>
         ${sil}
       </div>

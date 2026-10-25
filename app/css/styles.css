@@ -456,3 +456,6 @@ table.grid thead th{min-width:104px;}
 .kb-uyari{color:#8A4B00; display:block; margin-top:4px;}
 .kb-not{color:var(--ink-soft); font-size:12px;}
 button.pyeniden{border-color:var(--teal); color:var(--teal);}
+
+/* ---------- Dükkân saatleri: "bir öncekiyle aynı" ipucu ---------- */
+.sh-ayni{background:#FFF3CD; color:#664D03; border:1px solid #E6C86E; border-radius:6px; padding:3px 9px; font-size:12px; font-weight:600;}
