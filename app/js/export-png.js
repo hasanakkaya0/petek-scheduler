@@ -12,12 +12,12 @@
 
 function exportPng(){
   const scale = 2;
-  // Genislik DEGISMEDI (dayColW/empColW/supColW ayni) — duzen bozulmasin diye.
-  // Sadece YUKSEKLIK artirildi: satirlarda bol bos alan vardi, o alan puntoyu
-  // buyutmek icin kullaniliyor. Genislik sabit kaldigindan telefonda ekrana
-  // sigdirma orani degismiyor, dolayisiyla buyuyen punto dogrudan kazanc.
-  // (11 -> 16 punto = %45 daha buyuk yazi; 16 punto 118px sutuna tam sigiyor.)
-  const pad0 = 18, dayColW = 120, empColW = 118, supColW = 150, rowH = 96, headH = 64, titleH = 50;
+  // Personel sutunu genisligi (empColW) ve gun sutunu AYNI: 16 punto saat 118px sutuna tam sigiyor.
+  // Akşam sorumlusu sutunu 150 -> 100 px: baslik ve isimler IKI SATIRA bolunuyor
+  // ("Akşam / Sorumlusu", "Kişi J / Sert"), gorsel 50 px daha dar oluyor.
+  // Uzun yazilar (isimler, bolum adlari) KESILMEZ ve KUCULTULMEZ: sigmazsa iki satira bolunur
+  // (satirlaraBol). Kisaltma ("…") yalnizca tek bir kelime bile sigmiyorsa son care.
+  const pad0 = 18, dayColW = 120, empColW = 118, supColW = 100, rowH = 96, headH = 64, titleH = 50;
   const emps = ROSTER;
   const W = pad0*2 + dayColW + emps.length*empColW + supColW;
   const H = pad0*2 + titleH + headH + 7*rowH;
@@ -55,6 +55,29 @@ function exportPng(){
     return t + '…';
   }
 
+  // Metni, o anki yazi tipiyle olcerek EN FAZLA IKI SATIRA boler (kisaltmadan once son care).
+  // Sigiyorsa tek satir. Bolunecekse kelimeler arasinda iki satiri en dengeli yapan yer secilir
+  // ("Kişi F Hanım" -> "Kişi F" / "Hanım"). Tek bir kelime bile sigmiyorsa kisaltilir.
+  function satirlaraBol(text, maxW){
+    if(ctx.measureText(text).width <= maxW) return [text];
+    const kel = text.split(' ').filter(Boolean);
+    if(kel.length < 2) return [truncate(text, maxW)];
+    let en = null, enFark = Infinity;
+    for(let k = 1; k < kel.length; k++){
+      const a = kel.slice(0, k).join(' '), b = kel.slice(k).join(' ');
+      const wa = ctx.measureText(a).width, wb = ctx.measureText(b).width;
+      if(wa <= maxW && wb <= maxW && Math.abs(wa - wb) < enFark){ en = [a, b]; enFark = Math.abs(wa - wb); }
+    }
+    if(en) return en;
+    const orta = Math.ceil(kel.length / 2);
+    return [truncate(kel.slice(0, orta).join(' '), maxW), truncate(kel.slice(orta).join(' '), maxW)];
+  }
+  // 1 ya da 2 satirlik metni dikey olarak ortalayip yazar
+  function satirlariYaz(satirlar, cx, cy, satirAraligi){
+    const ilkY = cy - (satirlar.length - 1) * satirAraligi / 2;
+    satirlar.forEach((s, k) => ctx.fillText(s, cx, ilkY + k * satirAraligi));
+  }
+
   // başlık satırı (çalışan isimleri)
   ctx.textAlign = 'center';
   ctx.font = '700 15px system-ui, sans-serif';
@@ -62,11 +85,12 @@ function exportPng(){
   // Sadece isim yazilir. Calisma sekli (Tam zamanli / Part-time) bilerek
   // YAZILMAZ - gorsel personelle paylasiliyor, kimin hangi statude oldugu
   // orada gorunmesin. (Kullanici istegi, 15 Agustos.)
+  // Sigmayan isimler IKI SATIRA bolunur ("Kişi F" / "Hanım"), kesilmez.
   emps.forEach((p,i) => {
     const cx = colX(i) + empColW/2;
-    ctx.fillText(truncate(p.name, empColW-10), cx, gridTop + headH/2);
+    satirlariYaz(satirlaraBol(p.name, empColW-10), cx, gridTop + headH/2, 18);
   });
-  ctx.fillText('Akşam Sorumlusu', supX + supColW/2, gridTop + headH/2);
+  satirlariYaz(['Akşam', 'Sorumlusu'], supX + supColW/2, gridTop + headH/2, 18);
 
   // başlık alt çizgisi
   ctx.strokeStyle = '#262220'; ctx.lineWidth = 2;
@@ -124,10 +148,15 @@ function exportPng(){
           // (eskiden 7 idi), boylece yan yana duran seritler yapisik gorunmuyor.
           // Punto 13 -> 12.5: boylece bosluk artarken bolum adlari eskisinden
           // DAHA FAZLA kirpilmiyor ("Okuma Kitabi" hala tam sigiyor).
-          const bw = empColW - 24, bh = 26, bx = colX(i)+12, by = rowTop + 13;
+          // Uzun bolum adi ("Magaza sorumlusu") KESILMEZ: serit uzar ve ad iki satira bolunur.
+          ctx.font = '700 12.5px system-ui, sans-serif';
+          const bw = empColW - 24, bx = colX(i)+12;
+          const adSatirlari = satirlaraBol(z.label, bw-8);
+          const ikiSatir = adSatirlari.length > 1;
+          const bh = ikiSatir ? 38 : 26, by = rowTop + (ikiSatir ? 7 : 13);
           roundRect(ctx, bx, by, bw, bh, 5); ctx.fillStyle = z.color; ctx.fill();
-          ctx.fillStyle = '#fff'; ctx.font = '700 12.5px system-ui, sans-serif';
-          ctx.fillText(truncate(z.label, bw-8), cx, by + bh/2 + 1);
+          ctx.fillStyle = '#fff';
+          satirlariYaz(adSatirlari, cx, by + bh/2 + 1, 15);
         }
         // Saat: en onemli bilgi — koyu ve mumkun olan en buyuk punto (16),
         // 118px sutuna tam sigan sinir bu.
@@ -141,7 +170,14 @@ function exportPng(){
           ctx.fillStyle = bz ? bz.color : '#5B5449';
           ctx.font = '700 11.5px ui-monospace, monospace';
           ctx.fillText(`${b.start}–${b.end}`, cx, rowTop + 75);
-          ctx.fillText(truncate((bz ? bz.label : b.zone) + fazla, empColW-8), cx, rowTop + 88);
+          // Ikinci satir (gorev degisimi bolum adi): yardimci bilgi. Sigmazsa once 0.5 punto
+          // kuculur (en fazla 10 punto'ya), yine sigmazsa kisaltilir. (Ana yazilar KUCULTULMEZ.)
+          const blokAdi = (bz ? bz.label : b.zone) + fazla;
+          for(const pt of [11.5, 11, 10.5, 10]){
+            ctx.font = '700 ' + pt + 'px ui-monospace, monospace';
+            if(ctx.measureText(blokAdi).width <= empColW - 8) break;
+          }
+          ctx.fillText(truncate(blokAdi, empColW-8), cx, rowTop + 88);
         }
       } else {
         ctx.fillStyle = '#B7AE9C'; ctx.font = 'italic 14px system-ui, sans-serif';
@@ -149,9 +185,12 @@ function exportPng(){
       }
     });
 
-    // akşam sorumlusu
+    // akşam sorumlusu — isim iki satıra bölünür ("Kişi J" / "Sert"); sütun dar (100 px) olsun diye
     ctx.fillStyle = '#262220'; ctx.font = '700 15px ui-monospace, monospace';
-    ctx.fillText(truncate(weekData.days[key].sup || '—', supColW - 12), supX + supColW/2, midY);
+    const supAd = weekData.days[key].sup || '—';
+    const supBosluk = supAd.indexOf(' ');
+    const supSatirlar = supBosluk > 0 ? [supAd.slice(0, supBosluk), supAd.slice(supBosluk + 1)] : [supAd];
+    satirlariYaz(supSatirlar.map(s => truncate(s, supColW - 12)), supX + supColW/2, midY, 18);
 
     // satır alt çizgisi
     ctx.strokeStyle = '#D8CFBA'; ctx.lineWidth = 1;

@@ -47,7 +47,7 @@
   K('hata olmadan calisti', !r1.hata && !r2.hata && !r3.hata && !r4.hata);
   K('gun isimleri ciziliyor', r1.yazilar.includes('Pazartesi') && r1.yazilar.includes('Pazar'));
   K('baslik var', r1.yazilar.some(x=>x.includes('Petek')));
-  K('aksam sorumlusu basligi var', r1.yazilar.includes('Akşam Sorumlusu'));
+  K('aksam sorumlusu basligi var (iki satir: Akşam / Sorumlusu)', r1.yazilar.includes('Akşam') && r1.yazilar.includes('Sorumlusu'));
   K('saat araliklari ciziliyor', r1.yazilar.some(x=>/^\d\d:\d\d–\d\d:\d\d$/.test(x)));
   K('bos kadroda cokmuyor', !r4.hata);
 

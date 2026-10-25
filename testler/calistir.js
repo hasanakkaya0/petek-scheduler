@@ -63,6 +63,7 @@ const testler = [
   ['PERSONEL SILME (tamamen)',       'test_personel_silme.js'],
   ['GORSEL INDIRME (PNG)',           'test_gorsel.js'],
   ['GORSEL TASMA KONTROLU',          'test_gorsel_tasma.js'],
+  ['GORSEL: UZUN YAZILAR IKI SATIR',     'test_gorsel_satir.js'],
   ['KALITE RAPORU (4 hafta)',        'kalite_raporu.js'],
 ];
 
