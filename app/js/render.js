@@ -272,9 +272,9 @@ function cellContent(a){
   // 📌 işareti HER ZAMAN görünür (kilitli haftada da): elle değiştirilen hücreyi görmenin tek yolu bu.
   // (26 Ekim'de kilitli haftada gizlenmişti; kullanıcı itiraz etti, geri alındı.)
   const pin = a.manual ? `<span class="pinmark" title="sabit — otomatik oluşturma değiştirmez">📌</span>` : '';
-  if(a.leave === 'IZINLI') return `<span class="chip leave">İzinli</span>${pin}`;
-  if(a.leave === 'YILLIK') return `<span class="chip leaveY">Y. İzin</span>${pin}`;
-  if(a.leave === 'BORC') return `<span class="chip leaveB">Borç</span>${pin}`;
+  if(a.leave === 'IZINLI') return `<div class="zslot"><span class="chip leave">İzinli</span>${pin}</div>`;
+  if(a.leave === 'YILLIK') return `<div class="zslot"><span class="chip leaveY">Y. İzin</span>${pin}</div>`;
+  if(a.leave === 'BORC') return `<div class="zslot"><span class="chip leaveB">Borç</span>${pin}</div>`;
   if(!a.start || !a.end) return `<span class="empty-cell">atanmamış</span>`;
   const z = a.zone ? ZONE_MAP[a.zone] : null;
   const chip = z ? `<span class="chip" style="background:${z.color}">${z.label}</span>` : '';
@@ -282,7 +282,7 @@ function cellContent(a){
     const bz = ZONE_MAP[b.zone];
     return `<span class="blockchip" style="border-color:${bz ? bz.color : '#999'}; color:${bz ? bz.color : '#666'}"><span class="bc-saat">${b.start}–${b.end}</span><span class="bc-ad">${bz ? bz.label : b.zone}</span></span>`;
   }).join('');
-  return `${chip}<span class="timelabel">${a.start}–${a.end}${pin}</span>${blocks}`;
+  return `<div class="zslot">${chip}</div><span class="timelabel">${a.start}–${a.end}${pin}</span>${blocks}`;
 }
 
 /* =====================================================================

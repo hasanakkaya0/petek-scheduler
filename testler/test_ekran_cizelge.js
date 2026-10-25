@@ -69,6 +69,18 @@
   K('css: 📌 isaretini silikletme/gizleme kurali YOK', !/pinmark/.test(blok));
   K('css: "sade" sorumlu (cerceve-siz select) kurali YOK, sutun 150 px kaldi', !/sup-sade|appearance:none/.test(blok) && !/td\.supcell\{min-width:104/.test(blok) && /th\.supcol, td\.supcell\{[^}]*min-width:150px/.test(css));
 
+  // --- HUCRE DUZENI (26 Ekim, onayli): ayni iskelet, ortali, tam genisliklie serit ---
+  const calisan = cellContent({leave: 'NONE', start: '09:00', end: '19:00', zone: 'KASA'});
+  const izinli = cellContent({leave: 'IZINLI', start: null, end: null, zone: null});
+  K('hucre: bolum seridi sabit yukseklikli yuvada (zslot) ve saat ALTINDA', /^<div class="zslot"><span class="chip"[^>]*>[^<]+<\/span><\/div><span class="timelabel">09:00–19:00/.test(calisan));
+  K('hucre: izin kutusu da ayni yuvada (hizali)', /^<div class="zslot"><span class="chip leave">İzinli<\/span>/.test(izinli));
+  const duzen = css.slice(css.indexOf('HÜCRE DÜZENİ (26 Ekim 2026)'));
+  K('css: hucre ortalama kurali tablonun "sola yasla" kuralini EZECEK guclukte (#gridTable td.cell)', /#gridTable td\.cell\{text-align:center/.test(duzen));
+  K('css: serit tam genislik (width:100%) ve ortali', /\.zslot \.chip\{[^}]*display:block[^}]*width:100%[^}]*text-align:center/.test(duzen));
+  K('css: yuva en az 38 px (iki satirlik serit sigsin, saatler hizali kalsin)', /\.zslot\{[^}]*min-height:38px/.test(duzen));
+  K('css: izin kutulari tam genislik DEGIL (kendi boyunda, ortada)', /\.chip\.leave[^{]*\{width:auto/.test(duzen));
+  K('css: gorev degisimi kutusu tam genislik ve ortali', /\.blockchip\{width:100%[^}]*text-align:center/.test(duzen));
+
   document.getElementById = eskiGet;
   console.log('');
   console.log('  Sonuc: ' + gecen + ' gecti, ' + kalan + ' kaldi');

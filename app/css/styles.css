@@ -478,3 +478,18 @@ button.pyeniden{border-color:var(--teal); color:var(--teal);}
 /* 4) Görev değişimi kutusu: saat ve bölüm adı AYRI satırlar, satır içinde bölünmez ("Ders / Kitapları" gibi 3 satır olmasın) */
 .blockchip{font-size:10.5px; font-weight:700; padding:2px 5px; line-height:1.35; border-width:1.5px; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .blockchip .bc-saat, .blockchip .bc-ad{display:block; overflow:hidden; text-overflow:ellipsis;}
+
+/* =====================================================================
+   HÜCRE DÜZENİ (26 Ekim 2026) — ONAYLANDI ve yayınlandı
+   Sorun: `table.grid td{text-align:left}` hücrenin `text-align:center` kuralını eziyordu (hiç çalışmamış);
+   bölüm kutusu yazıya göre genişliyor, saat sola yaslı, sağ taraf boş kalıyordu.
+   Yeni: her hücrede AYNI iskelet — sabit yükseklikli "bölüm şeridi" yuvası (içinde tek/iki satır ortalı şerit),
+   saat altında ortalı, görev değişimi kutusu tam genişlik. (Görsel/PNG çıktısındaki düzenle aynı.)
+   Geri alma: bu bloğu sil + render.js yerine surumler/render_hucre_duzeni_oncesi_2026-10-26.js
+   ===================================================================== */
+#gridTable td.cell{text-align:center; vertical-align:top;}
+#gridTable td.cell .zslot{min-height:38px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap;}
+#gridTable td.cell .zslot .chip{display:block; width:100%; box-sizing:border-box; text-align:center; margin:0; padding:5px 6px; line-height:1.2; font-size:11.5px;}
+#gridTable td.cell .zslot .chip.leave, #gridTable td.cell .zslot .chip.leaveY, #gridTable td.cell .zslot .chip.leaveB{width:auto; padding:4px 12px;}
+#gridTable td.cell .timelabel{text-align:center; margin-top:4px;}
+#gridTable td.cell .blockchip{width:100%; box-sizing:border-box; text-align:center;}
