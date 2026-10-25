@@ -43,7 +43,7 @@ function renderPinBadge(){
   const el = document.getElementById('pinBadge');
   if(!el) return;
   const n = sabitHucreSay();
-  el.hidden = n === 0 || haftaKilitli();      // kilitli haftada "N sabit" rozeti anlamsız (hepsi kilitli)
+  el.hidden = n === 0;
   el.textContent = '📌 ' + n + ' sabit';
   el.title = n + ' hücre elle sabitlenmiş (📌). Otomatik oluşturma bu günlere dokunmaz. '
            + 'Bir günü tekrar serbest bırakmak için o hücreye tıkla ve "Serbest" seç.';
@@ -177,12 +177,10 @@ function renderGrid(){
       const dolu = a && (isWorking(a) || a.leave !== 'NONE');
       return `<td class="cell" data-date="${key}" data-name="${p.name}"${dolu ? ' draggable="true"' : ''}>${cellContent(a)}</td>`;
     }).join('');
-    // Akşam sorumlusu: SADE görünüm — yalnız isim (üzerine gelince açılır liste belirir). Eskiden her satırda
-    // "elle atandı / serbest bırak" yazısı vardı; artık küçük 📌 (üzerine gelince belirgin, tıklayınca serbest bırakır).
-    const supElle = weekData.days[key].supManual;
+    // Akşam sorumlusu: ESKİ görünüm geri alındı (26 Ekim) — "sade" hâli birbirinden ayrışmıyordu.
     const supCell = `<td class="supcell">
-      <select class="sup-sade${supElle ? ' manual' : ''}" data-date="${key}" title="${supElle ? 'Elle atandı — otomatik oluşturma bunu değiştirmez' : 'Akşam sorumlusu (tıklayıp değiştir)'}">${supOptions}</select>
-      ${supElle && !haftaKilitli() ? `<button class="sup-free" data-date="${key}" title="Elle atandı. Tıklarsan serbest bırakılır; otomatik oluşturma yeniden seçebilir.">📌</button>` : ''}
+      <select data-date="${key}">${supOptions}</select>
+      ${weekData.days[key].supManual ? `<div class="supmanual">📌 elle atandı <button class="sup-free" data-date="${key}">serbest bırak</button></div>` : ''}
     </td>`;
     // BUGÜN: bu hafta içindeyse bugünün satırı renkli ve "bugün" etiketli
     const bugunMu = key === fmtDate(new Date());
@@ -271,9 +269,9 @@ function weeklyFooter(){
 }
 
 function cellContent(a){
-  // 📌 işareti: kilitli haftada GÖSTERİLMEZ (zaten her şey kilitli, iğneler gürültü olur);
-  // kilitsiz haftada silik, üzerine gelince belirgin (CSS .pinmark).
-  const pin = (a.manual && !haftaKilitli()) ? `<span class="pinmark" title="sabit — otomatik oluşturma değiştirmez">📌</span>` : '';
+  // 📌 işareti HER ZAMAN görünür (kilitli haftada da): elle değiştirilen hücreyi görmenin tek yolu bu.
+  // (26 Ekim'de kilitli haftada gizlenmişti; kullanıcı itiraz etti, geri alındı.)
+  const pin = a.manual ? `<span class="pinmark" title="sabit — otomatik oluşturma değiştirmez">📌</span>` : '';
   if(a.leave === 'IZINLI') return `<span class="chip leave">İzinli</span>${pin}`;
   if(a.leave === 'YILLIK') return `<span class="chip leaveY">Y. İzin</span>${pin}`;
   if(a.leave === 'BORC') return `<span class="chip leaveB">Borç</span>${pin}`;
@@ -282,7 +280,7 @@ function cellContent(a){
   const chip = z ? `<span class="chip" style="background:${z.color}">${z.label}</span>` : '';
   const blocks = (a.blocks || []).map(b => {
     const bz = ZONE_MAP[b.zone];
-    return `<span class="blockchip" style="border-color:${bz ? bz.color : '#999'}; color:${bz ? bz.color : '#666'}">${b.start}–${b.end} ${bz ? bz.label : b.zone}</span>`;
+    return `<span class="blockchip" style="border-color:${bz ? bz.color : '#999'}; color:${bz ? bz.color : '#666'}"><span class="bc-saat">${b.start}–${b.end}</span><span class="bc-ad">${bz ? bz.label : b.zone}</span></span>`;
   }).join('');
   return `${chip}<span class="timelabel">${a.start}–${a.end}${pin}</span>${blocks}`;
 }
