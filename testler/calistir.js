@@ -51,6 +51,7 @@ const testler = [
   ['YILLIK IZIN SAYACI',             'test_yillik_izin.js'],
   ['DUKKAN SAATLERI (tarihli duzen)', 'test_dukkan_saatleri.js'],
   ['SEKMELER (Cizelge/Sayaclar/Ayarlar)', 'test_sekmeler.js'],
+  ['EKRAN CIZELGESI (bugun, sade sorumlu...)', 'test_ekran_cizelge.js'],
   ['BULUT SENKRONU (Firebase, sahte sunucu)', 'test_bulut.js'],
   ['BIRLIKTE CALISMA UYARISI',        'test_birlikte.js'],
   ['YENILE DUGMESI',                  'test_yenile.js'],

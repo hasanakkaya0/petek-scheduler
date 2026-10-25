@@ -419,7 +419,7 @@ function haftaSorunlariniHesapla(){
     });
   });
 
-  return {sorunlar, notlar, sabit: (typeof sabitHucreSay === 'function' ? sabitHucreSay() : 0), bosGunler, bosHafta};
+  return {sorunlar, notlar, sabit: (typeof sabitHucreSay === 'function' && !(typeof haftaKilitli === 'function' && haftaKilitli()) ? sabitHucreSay() : 0), bosGunler, bosHafta};
 }
 
 function renderCanliDurum(){

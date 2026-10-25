@@ -43,7 +43,7 @@ function renderPinBadge(){
   const el = document.getElementById('pinBadge');
   if(!el) return;
   const n = sabitHucreSay();
-  el.hidden = n === 0;
+  el.hidden = n === 0 || haftaKilitli();      // kilitli haftada "N sabit" rozeti anlamsız (hepsi kilitli)
   el.textContent = '📌 ' + n + ' sabit';
   el.title = n + ' hücre elle sabitlenmiş (📌). Otomatik oluşturma bu günlere dokunmaz. '
            + 'Bir günü tekrar serbest bırakmak için o hücreye tıkla ve "Serbest" seç.';
@@ -177,11 +177,16 @@ function renderGrid(){
       const dolu = a && (isWorking(a) || a.leave !== 'NONE');
       return `<td class="cell" data-date="${key}" data-name="${p.name}"${dolu ? ' draggable="true"' : ''}>${cellContent(a)}</td>`;
     }).join('');
+    // Akşam sorumlusu: SADE görünüm — yalnız isim (üzerine gelince açılır liste belirir). Eskiden her satırda
+    // "elle atandı / serbest bırak" yazısı vardı; artık küçük 📌 (üzerine gelince belirgin, tıklayınca serbest bırakır).
+    const supElle = weekData.days[key].supManual;
     const supCell = `<td class="supcell">
-      <select data-date="${key}">${supOptions}</select>
-      ${weekData.days[key].supManual ? `<div class="supmanual">📌 elle atandı <button class="sup-free" data-date="${key}">serbest bırak</button></div>` : ''}
+      <select class="sup-sade${supElle ? ' manual' : ''}" data-date="${key}" title="${supElle ? 'Elle atandı — otomatik oluşturma bunu değiştirmez' : 'Akşam sorumlusu (tıklayıp değiştir)'}">${supOptions}</select>
+      ${supElle && !haftaKilitli() ? `<button class="sup-free" data-date="${key}" title="Elle atandı. Tıklarsan serbest bırakılır; otomatik oluşturma yeniden seçebilir.">📌</button>` : ''}
     </td>`;
-    return `<tr><td class="daycol">${dayLabel(i)}<button class="dayhours-gear" data-date="${key}" title="Bu güne özel dükkan saati">⚙</button><span class="daynum">${pad(d.getDate())}.${pad(d.getMonth()+1)}</span>${weekData.days[key].customHours ? `<span class="customhrs" title="Bu güne özel saat">${weekData.days[key].customHours.open}–${weekData.days[key].customHours.close}</span>` : ''}</td>${empCells}${supCell}</tr>`;
+    // BUGÜN: bu hafta içindeyse bugünün satırı renkli ve "bugün" etiketli
+    const bugunMu = key === fmtDate(new Date());
+    return `<tr${bugunMu ? ' class="bugun"' : ''}><td class="daycol">${dayLabel(i)}${bugunMu ? '<span class="bugun-etiket">bugün</span>' : ''}<button class="dayhours-gear" data-date="${key}" title="Bu güne özel dükkan saati">⚙</button><span class="daynum">${pad(d.getDate())}.${pad(d.getMonth()+1)}</span>${weekData.days[key].customHours ? `<span class="customhrs" title="Bu güne özel saat">${weekData.days[key].customHours.open}–${weekData.days[key].customHours.close}</span>` : ''}</td>${empCells}${supCell}</tr>`;
   }).join('') + '</tbody>';
 
   table.innerHTML = thead + tbody + weeklyFooter();
@@ -266,7 +271,9 @@ function weeklyFooter(){
 }
 
 function cellContent(a){
-  const pin = a.manual ? `<span class="pinmark" title="sabit — otomatik oluşturma değiştirmez">📌</span>` : '';
+  // 📌 işareti: kilitli haftada GÖSTERİLMEZ (zaten her şey kilitli, iğneler gürültü olur);
+  // kilitsiz haftada silik, üzerine gelince belirgin (CSS .pinmark).
+  const pin = (a.manual && !haftaKilitli()) ? `<span class="pinmark" title="sabit — otomatik oluşturma değiştirmez">📌</span>` : '';
   if(a.leave === 'IZINLI') return `<span class="chip leave">İzinli</span>${pin}`;
   if(a.leave === 'YILLIK') return `<span class="chip leaveY">Y. İzin</span>${pin}`;
   if(a.leave === 'BORC') return `<span class="chip leaveB">Borç</span>${pin}`;
