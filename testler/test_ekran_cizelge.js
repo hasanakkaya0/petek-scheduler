@@ -66,7 +66,7 @@
   K('css: saat 13 punto KALIN ve koyu', /\.timelabel\{[^}]*font-size:13px[^}]*font-weight:700[^}]*color:var\(--ink\)/.test(blok));
   K('css: bugun satiri ve etiketi tanimli', /tr\.bugun > td\{background/.test(blok) && /\.bugun-etiket\{/.test(blok));
   K('css: gorev degisimi kutusu satirlari bolunmez (nowrap) ve ayri satir', /\.blockchip\{[^}]*white-space:nowrap/.test(blok) && /\.bc-saat, \.blockchip \.bc-ad\{display:block/.test(blok));
-  K('css: 📌 isaretini silikletme/gizleme kurali YOK', !/pinmark/.test(blok));
+  K('css: 📌 isaretini silikletme/gizleme kurali YOK', !/pinmark[^{]*\{[^}]*(opacity|display:\s*none|visibility)/.test(blok));
   K('css: "sade" sorumlu (cerceve-siz select) kurali YOK, sutun 150 px kaldi', !/sup-sade|appearance:none/.test(blok) && !/td\.supcell\{min-width:104/.test(blok) && /th\.supcol, td\.supcell\{[^}]*min-width:150px/.test(css));
 
   // --- HUCRE DUZENI (26 Ekim, onayli): ayni iskelet, ortali, tam genisliklie serit ---
@@ -78,6 +78,7 @@
   K('css: hucre ortalama kurali tablonun "sola yasla" kuralini EZECEK guclukte (#gridTable td.cell)', /#gridTable td\.cell\{text-align:center/.test(duzen));
   K('css: serit tam genislik (width:100%) ve ortali', /\.zslot \.chip\{[^}]*display:block[^}]*width:100%[^}]*text-align:center/.test(duzen));
   K('css: yuva en az 38 px (iki satirlik serit sigsin, saatler hizali kalsin)', /\.zslot\{[^}]*min-height:38px/.test(duzen));
+  K('css: saat + 📌 ayni satirda kalir (nowrap), 📌 alta inmez', /\.timelabel\{[^}]*white-space:nowrap/.test(duzen));
   K('css: izin kutulari tam genislik DEGIL (kendi boyunda, ortada)', /\.chip\.leave[^{]*\{width:auto/.test(duzen));
   K('css: gorev degisimi kutusu tam genislik ve ortali', /\.blockchip\{width:100%[^}]*text-align:center/.test(duzen));
 

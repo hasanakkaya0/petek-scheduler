@@ -491,5 +491,6 @@ button.pyeniden{border-color:var(--teal); color:var(--teal);}
 #gridTable td.cell .zslot{min-height:38px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap;}
 #gridTable td.cell .zslot .chip{display:block; width:100%; box-sizing:border-box; text-align:center; margin:0; padding:5px 6px; line-height:1.2; font-size:11.5px;}
 #gridTable td.cell .zslot .chip.leave, #gridTable td.cell .zslot .chip.leaveY, #gridTable td.cell .zslot .chip.leaveB{width:auto; padding:4px 12px;}
-#gridTable td.cell .timelabel{text-align:center; margin-top:4px;}
+#gridTable td.cell .timelabel{text-align:center; margin-top:4px; white-space:nowrap;}
+#gridTable td.cell .timelabel .pinmark{margin-left:1px; letter-spacing:0;}
 #gridTable td.cell .blockchip{width:100%; box-sizing:border-box; text-align:center;}
