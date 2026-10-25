@@ -64,7 +64,8 @@ function personelSatiri(p, idx){
     <td class="pcell">${zoneLabels(p.primary)}</td>
     <td class="pcell" style="color:var(--ink-soft)">${zoneLabels(p.backup)}</td>
     <td class="pcell">${tags.join(' ') || '—'}</td>
-    <td class="pcell"><button class="pedit" data-name="${p.name}">düzenle</button></td>
+    <td class="pcell"><button class="pedit" data-name="${p.name}">düzenle</button>${p.endWeek
+      ? ` <button class="pedit pyeniden" data-name="${p.name}" title="Ayrılma kaydını kaldırır; geçmişi aynı kayıtta devam eder">yeniden işe al</button> <button class="pedit pbirlestir" data-name="${p.name}" title="Aynı kişinin başka bir kaydıyla birleştir">birleştir…</button>` : ''}</td>
   </tr>`;
 }
 
@@ -107,8 +108,11 @@ function renderPeople(){
     }
   }
 
-  document.querySelectorAll('#peopleTable button.pedit, #ayrilanKutu button.pedit').forEach(b =>
-    b.addEventListener('click', () => openPerson(b.dataset.name)));
+  document.querySelectorAll('#peopleTable button.pedit, #ayrilanKutu button.pedit').forEach(b => {
+    if(b.classList.contains('pyeniden') || b.classList.contains('pbirlestir')) return;   // bunları kisi-birlestir.js yönetir
+    b.addEventListener('click', () => openPerson(b.dataset.name));
+  });
+  if(typeof KisiBirlestir !== 'undefined') KisiBirlestir.uyariCiz();      // "bunlar aynı kişi olabilir" uyarısı
   document.querySelectorAll('#peopleTable button.pmove, #ayrilanKutu button.pmove').forEach(b =>
     b.addEventListener('click', () => movePerson(b.dataset.name, Number(b.dataset.dir))));
 }
@@ -175,6 +179,8 @@ function openPerson(name){
   document.getElementById('pCloseGroup').value = (p && p.closeGroup) ? p.closeGroup : '';
   renderPersonBlocks(p ? (p.dayBlocks || []) : []);
   document.getElementById('pDelete').style.display = p ? 'block' : 'none';
+  const pb = document.getElementById('pBirlestir');
+  if(pb) pb.style.display = p ? 'block' : 'none';
   document.getElementById('pPurge').style.display = p ? 'block' : 'none';
   const acik = document.getElementById('silAciklama');
   if(acik) acik.style.display = p ? 'block' : 'none';

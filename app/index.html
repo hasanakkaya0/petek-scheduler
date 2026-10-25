@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Petek Çalışma Programı v1.2</title>
-<link rel="stylesheet" href="css/styles.css?v=202610251919">
+<link rel="stylesheet" href="css/styles.css?v=202610251934">
 </head>
 <body>
 <div class="wrap">
@@ -87,6 +87,7 @@
       sorumlusu yetkisini değiştirebilirsin. <b>Otomatik liste doğrudan bu ayarlara göre çalışır</b> —
       kod değiştirmeye gerek yok.
     </div>
+    <div id="kisiUyari"></div>
     <div style="overflow-x:auto;"><table class="grid" id="peopleTable"></table></div>
     <div id="ayrilanKutu"></div>
     <button class="tool" id="btnAddPerson" style="margin-top:12px; border-color:var(--burgundy); color:var(--burgundy); font-weight:700;">+ Personel ekle</button>
@@ -356,6 +357,7 @@
 
     <div class="modal-actions" style="flex-wrap:wrap; gap:8px;">
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="ghost" id="pBirlestir" style="display:none;">Aynı kişiyle birleştir…</button>
         <button class="ghost" id="pDelete" style="color:var(--red); border-color:var(--red);">Kadrodan çıkar</button>
         <button class="ghost" id="pPurge" style="color:#fff; background:var(--red); border-color:var(--red);">Tamamen sil</button>
       </div>
@@ -369,6 +371,21 @@
       görünmez, <b>geçmiş haftalardaki vardiyaları ve Borç/Alacak kayıtları durur</b>.<br>
       <b>Tamamen sil</b> — kişiyi <b>geçmiş, bugün ve gelecek bütün haftalardan</b> siler.
       Geri alınamaz; yalnızca hiç çalışmamış/yanlış eklenmiş kişiler için kullan.
+    </div>
+  </div>
+</div>
+
+<!-- Kişileri birleştir -->
+<div class="overlay" id="birlestirOverlay">
+  <div class="modal">
+    <h3 id="kbBaslik">Kayıtları birleştir</h3>
+    <div class="sub">Aynı kişinin iki ayrı kaydını tek kayıtta topla</div>
+    <div class="field"><label>Birleştirilecek diğer kayıt</label><select id="kbDiger"></select></div>
+    <div class="field"><label>Birleşik kaydın adı</label><select id="kbAd"></select></div>
+    <div class="kb-onizleme" id="kbOnizleme"></div>
+    <div class="modal-actions">
+      <button class="ghost" id="kbIptal">Vazgeç</button>
+      <button class="primary" id="kbUygula" disabled>Birleştir</button>
     </div>
   </div>
 </div>
@@ -481,54 +498,57 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js?v=202610251919"></script>
+<script src="js/firebase-config.js?v=202610251934"></script>
 
 <!-- Yardımcı fonksiyonlar (tarih/saat hesapları) — ana koddan ÖNCE yüklenmeli -->
-<script src="js/utils.js?v=202610251919"></script>
+<script src="js/utils.js?v=202610251934"></script>
 
 <!-- Dükkân saatleri paneli (8 numaralı panel) -->
-<script src="js/shop-hours.js?v=202610251919"></script>
+<script src="js/shop-hours.js?v=202610251934"></script>
 
 <!-- Veri kaydetme / yükleme -->
-<script src="js/storage.js?v=202610251919"></script>
+<script src="js/storage.js?v=202610251934"></script>
 
 <!-- Bulut senkronu (Firebase) — store buna yönlenir -->
-<script src="js/bulut.js?v=202610251919"></script>
+<script src="js/bulut.js?v=202610251934"></script>
 
 <!-- Birlikte çalışma: "başka bilgisayarda da bu hafta açık" uyarısı -->
-<script src="js/oto-kopya.js?v=202610251919"></script>
-<script src="js/surum-kontrol.js?v=202610251919"></script>
-<script src="js/birlikte.js?v=202610251919"></script>
+<script src="js/oto-kopya.js?v=202610251934"></script>
+<script src="js/surum-kontrol.js?v=202610251934"></script>
+<script src="js/birlikte.js?v=202610251934"></script>
 
 <!-- Örnek veri (yalnızca ?deneme modunda düğmeyle) -->
-<script src="js/ornek-veri.js?v=202610251919"></script>
+<script src="js/ornek-veri.js?v=202610251934"></script>
 
 <!-- Sekmeler (Çizelge / Sayaçlar / Ayarlar) -->
-<script src="js/sekmeler.js?v=202610251919"></script>
+<script src="js/sekmeler.js?v=202610251934"></script>
 
 <!-- Görsel indirme (PNG) -->
-<script src="js/export-png.js?v=202610251919"></script>
+<script src="js/export-png.js?v=202610251934"></script>
 
 <!-- Borç / Alacak Sayacı (6 numaralı panel) -->
-<script src="js/ledger.js?v=202610251919"></script>
+<script src="js/ledger.js?v=202610251934"></script>
 
 <!-- Yıllık İzin Sayacı (7 numaralı panel) -->
-<script src="js/yillik-izin.js?v=202610251919"></script>
+<script src="js/yillik-izin.js?v=202610251934"></script>
 
 <!-- Otomatik haftalık liste oluşturucu ("Haftayı otomatik oluştur" butonu) -->
-<script src="js/generator.js?v=202610251919"></script>
+<script src="js/generator.js?v=202610251934"></script>
 
 <!-- Ayar panelleri: Personel (3) / Bölümler (4) / Kapsama kuralları (5) -->
-<script src="js/settings-panels.js?v=202610251919"></script>
+<script src="js/settings-panels.js?v=202610251934"></script>
+
+<!-- Kişileri birleştir / yeniden işe al -->
+<script src="js/kisi-birlestir.js?v=202610251934"></script>
 
 <!-- Ekran çizimi: üst gezinme + haftalık çizelge tablosu -->
-<script src="js/render.js?v=202610251919"></script>
+<script src="js/render.js?v=202610251934"></script>
 
 <!-- Düzenleme pencereleri: tek hücre + haftalık şablon -->
-<script src="js/modals.js?v=202610251919"></script>
+<script src="js/modals.js?v=202610251934"></script>
 
 <!-- Kapsama doğrulama ve öneriler (2 numaralı panel) -->
-<script src="js/validation.js?v=202610251919"></script>
+<script src="js/validation.js?v=202610251934"></script>
 
 <script>
 /* ---------------------------------------------------------------------
@@ -673,6 +693,7 @@ let prevSundayOff = new Set();
 let selectedValidationDay = 0; // 0..6
 let editing = null;       // {dateStr, name}
 let ledger = [];          // Borç/Alacak: manuel hareketler [{id,name,date,hours,note,ts}]
+let ayriKisiler = [];     // "Aynı kişi değil" denen çiftler (kisi-birlestir.js): ["Ad1|Ad2", ...]
 let balanceCache = {};    // computeAllBalances() sonucu — {name:{thisWeek,auto,manual,total}}
 
 async function loadSettings(){
@@ -708,12 +729,13 @@ async function loadSettings(){
       // (s.templates artık kullanılmıyor — haftalık şablon özelliği kaldırıldı.
       //  Eski yedeklerde bu alan bulunabilir, sessizce yok sayılır.)
       if(Array.isArray(s.ledger)) ledger = s.ledger.slice();
+      if(Array.isArray(s.ayriKisiler)) ayriKisiler = s.ayriKisiler.slice();
       if(migrated){ try{ await saveSettings(); }catch(e){} }
     }catch(e){ /* bozuk ayar, varsayılanla devam */ }
   }
 }
 async function saveSettings(){
-  const res = await store.set('settings', JSON.stringify({rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger, shopHours: SHOP_HOURS}));
+  const res = await store.set('settings', JSON.stringify({rules, supRuleEnabled, sundayComp, people: PEOPLE, zones: ZONES, ledger, shopHours: SHOP_HOURS, ayriKisiler}));
   // Ayar kaydı (personel/kurallar/borç-alacak) sessizce kaybolmasın — normalde
   // kaydedilebiliyorken bu seferki yazma başarısız olduysa üstteki rozette uyar.
   if(res === null && canPersist) markSaved('fail');

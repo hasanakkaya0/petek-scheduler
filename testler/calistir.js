@@ -61,6 +61,7 @@ const testler = [
   ['KAPANIS SINIRI + GRUP',          'test_kapanis_siniri.js'],
   ['KADRO GECERLILIK TARIHI',        'test_kadro_tarihi.js'],
   ['PERSONEL SILME (tamamen)',       'test_personel_silme.js'],
+  ['KISILERI BIRLESTIR / YENIDEN ISE AL',  'test_kisi_birlestir.js'],
   ['GORSEL INDIRME (PNG)',           'test_gorsel.js'],
   ['GORSEL TASMA KONTROLU',          'test_gorsel_tasma.js'],
   ['GORSEL: UZUN YAZILAR IKI SATIR',     'test_gorsel_satir.js'],
