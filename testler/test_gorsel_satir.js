@@ -27,9 +27,9 @@
     },
     set(t, k, v){ if(k === 'font') suFont = v; if(k === 'textAlign') suHiza = v; return true; }
   });
-  let W = 0;
+  let W = 0, Hg = 0;
   document.createElement = tag => tag === 'canvas'
-    ? {set width(v){ W = v / 2; }, set height(v){}, getContext(){ return ctxStub; }, toDataURL(){ return 'data:,'; }}
+    ? {set width(v){ W = v / 2; }, set height(v){ Hg = v / 2; }, getContext(){ return ctxStub; }, toDataURL(){ return 'data:,'; }}
     : {style: {}, set href(v){}, set download(v){}, click(){}};
 
   // --- Uydurma kadro: uzun isimler + uzun bolum adi + iki kelimeli aksam sorumlusu ---
@@ -88,6 +88,31 @@
   K('ana yazilar kucultulmedi: isim 15px, saat 16px, bolum adi 12.5px',
     yazilar.some(y => y.s === 'Zeynepnur' && /700 15px/.test(y.font)) && yazilar.some(y => y.s === '09:00–19:00' && /700 16px/.test(y.font))
     && yazilar.some(y => y.s === 'Mağaza' && /700 12\.5px/.test(y.font)));
+
+  // --- Bir kisinin BIRDEN FAZLA gorev degisimi: HEPSI yazilmali ("+1" yok) ---
+  const hOnce = Hg;
+  weekData.days[pzt].assignments['Kerem Bey'].blocks = [
+    {start: '19:00', end: '21:00', zone: 'KASA'},
+    {start: '11:00', end: '14:00', zone: 'KASA'},
+    {start: '15:00', end: '18:00', zone: 'MAGAZA_SORUMLUSU'},
+  ];
+  yazilar.length = 0;
+  exportPng();
+  const m2 = yazilar.map(y => y.s);
+  K('3 gorev degisiminin HEPSI yazildi: 11:00–14:00, 15:00–18:00, 19:00–21:00', m2.some(x => x.startsWith('11:00–14:00')) && m2.some(x => x.startsWith('15:00–18:00')) && m2.some(x => x.startsWith('19:00–21:00')));
+  K('"+1" gibi gizleyen ifade YOK', !m2.some(x => /\+\d/.test(x)));
+  K('kisa olanlar tek satir: "11:00–14:00 Kasa", "19:00–21:00 Kasa"', m2.includes('11:00–14:00 Kasa') && m2.includes('19:00–21:00 Kasa'));
+  K('uzun olan iki satir: "15:00–18:00" + "Mağaza sorumlusu"', m2.includes('15:00–18:00') && m2.filter(x => x === 'Mağaza sorumlusu').length >= 1);
+  const y1 = yazilar.find(y => y.s === '11:00–14:00 Kasa').y, y2 = yazilar.find(y => y.s === '15:00–18:00').y, y3 = yazilar.find(y => y.s === '19:00–21:00 Kasa').y;
+  K('sirali: en erken ustte (11:00 < 15:00 < 19:00)', y1 < y2 && y2 < y3);
+  K('satirlar birbirine binmiyor (en az 12 px arayla)', y2 - y1 >= 12 && y3 - y2 >= 12);
+  K('gun satiri uzadi (gorsel yuksekligi ' + hOnce + ' -> ' + Hg + ')', Hg > hOnce + 20);
+  const sutunTasan = [];
+  yazilar.filter(y => y.y > 70 && y.hiza === 'center' && y.x > gridLeft + dayColW && y.x < supX).forEach(y => { if(y.w > empColW - 2) sutunTasan.push(y.s + ' ' + y.w.toFixed(0) + 'px'); });
+  K('hicbir blok satiri sutuna tasmiyor' + (sutunTasan.length ? ' → ' + sutunTasan.slice(0, 3).join('; ') : ''), sutunTasan.length === 0);
+  weekData.days[pzt].assignments['Kerem Bey'].blocks = [{start: '19:00', end: '21:00', zone: 'KASA'}];   // tek blok: satir uzamaz
+  const hTek = (() => { exportPng(); return Hg; })();
+  K('tek gorev degisiminde gun satiri NORMAL yukseklikte kalir (' + hTek + ' <= ' + (hOnce + 2) + ')', hTek <= hOnce + 2);
 
   console.log('');
   console.log('  Sonuc: ' + gecen + ' gecti, ' + kalan + ' kaldi');

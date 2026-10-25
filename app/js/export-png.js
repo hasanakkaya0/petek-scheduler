@@ -20,11 +20,46 @@ function exportPng(){
   const pad0 = 18, dayColW = 120, empColW = 118, supColW = 100, rowH = 96, headH = 64, titleH = 50;
   const emps = ROSTER;
   const W = pad0*2 + dayColW + emps.length*empColW + supColW;
-  const H = pad0*2 + titleH + headH + 7*rowH;
 
   const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');       // önce yazı ölçümü için; boyut satır yüksekliklerinden SONRA verilir
+
+  // GÖREV DEĞİŞİMİ satırları: bir kişinin o gün KAÇ görev değişimi varsa HEPSİ yazılır (saat aralığı + bölüm adı),
+  // en erken olan üstte. Sığıyorsa tek satır ("11:00–14:00 Kasa"), sığmazsa iki satır (saat / bölüm adı).
+  // (Eskiden yalnız ilki yazılıp yanına "+1" konuyordu — kişi ikinci görevi ne zaman yapacağını göremiyordu.)
+  // Satır sayısı arttıkça O GÜNÜN yüksekliği uzar; yazı küçülmez/kesilmez.
+  const BLOK_MAXW = empColW - 8, BLOK_SATIR = 13, BLOK_ILK_Y = 75;
+  function blokSatirlari(a){
+    const out = [];
+    (a.blocks || []).slice().sort((x, y) => toMin(x.start) - toMin(y.start)).forEach(b => {
+      const bz = ZONE_MAP[b.zone], ad = bz ? bz.label : b.zone, renk = bz ? bz.color : '#5B5449';
+      const aralik = b.start + '–' + b.end;
+      ctx.font = '700 11px ui-monospace, monospace';
+      if(ctx.measureText(aralik + ' ' + ad).width <= BLOK_MAXW){ out.push({s: aralik + ' ' + ad, renk, pt: 11}); return; }
+      out.push({s: aralik, renk, pt: 11.5});
+      let pt = 11.5;
+      for(const k of [11.5, 11, 10.5, 10]){ pt = k; ctx.font = '700 ' + k + 'px ui-monospace, monospace'; if(ctx.measureText(ad).width <= BLOK_MAXW) break; }
+      out.push({s: ad, renk, pt, kisalt: true});      // bölüm adı bu kadar küçülünce de sığmazsa son çare kısaltılır
+    });
+    return out;
+  }
+  const blokSatirlariTablosu = [], satirYuksekligi = [];
+  for(let r = 0; r < 7; r++){
+    const key = fmtDate(addDays(currentMonday, r));
+    let enCok = 0;
+    blokSatirlariTablosu[r] = emps.map(p => {
+      const a = weekData.days[key].assignments[p.name];
+      const l = (a && a.start && a.end && a.blocks && a.blocks.length) ? blokSatirlari(a) : [];
+      enCok = Math.max(enCok, l.length);
+      return l;
+    });
+    satirYuksekligi[r] = Math.max(rowH, enCok ? BLOK_ILK_Y + BLOK_SATIR * (enCok - 1) + 9 : rowH);
+  }
+  const satirUstleri = []; let gunlerToplami = 0;
+  satirYuksekligi.forEach(h => { satirUstleri.push(gunlerToplami); gunlerToplami += h; });
+  const H = pad0*2 + titleH + headH + gunlerToplami;
+
   canvas.width = W*scale; canvas.height = H*scale;
-  const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
   ctx.textBaseline = 'middle';
 
@@ -100,8 +135,9 @@ function exportPng(){
   for(let r=0;r<7;r++){
     const d = addDays(currentMonday, r);
     const key = fmtDate(d);
-    const rowTop = gridTop + headH + r*rowH;
-    const midY = rowTop + rowH/2;
+    const rh = satirYuksekligi[r];                       // görev değişimi çoksa o günün satırı uzar
+    const rowTop = gridTop + headH + satirUstleri[r];
+    const midY = rowTop + rh/2;
 
     // Satir ayrimi — gunleri gozle ayirmak icin cok hafif zemin.
     // DUZ ALTERNASYON, istisna yok. (Daha once Pazar'a ayri koyu ton verilmisti;
@@ -110,7 +146,7 @@ function exportPng(){
     // 7 satir tek sayi oldugundan dizilim duz satirla baslar ve duz satirla biter.
     if(r % 2 === 1){
       ctx.fillStyle = '#F5F1E6';
-      ctx.fillRect(gridLeft, rowTop, W - pad0 - gridLeft, rowH);
+      ctx.fillRect(gridLeft, rowTop, W - pad0 - gridLeft, rh);
     }
 
     // gün etiketi
@@ -162,23 +198,13 @@ function exportPng(){
         // 118px sutuna tam sigan sinir bu.
         ctx.fillStyle = '#262220'; ctx.font = '700 16px ui-monospace, monospace';
         ctx.fillText(`${a.start}–${a.end}`, cx, rowTop + 59);
-        if(a.blocks && a.blocks.length){
-          // Gorev degisimi: saat araligi + bolum adi iki satirda (118px sutuna sigsin diye)
-          const b = a.blocks[0];
-          const bz = ZONE_MAP[b.zone];
-          const fazla = a.blocks.length > 1 ? ` +${a.blocks.length-1}` : '';
-          ctx.fillStyle = bz ? bz.color : '#5B5449';
-          ctx.font = '700 11.5px ui-monospace, monospace';
-          ctx.fillText(`${b.start}–${b.end}`, cx, rowTop + 75);
-          // Ikinci satir (gorev degisimi bolum adi): yardimci bilgi. Sigmazsa once 0.5 punto
-          // kuculur (en fazla 10 punto'ya), yine sigmazsa kisaltilir. (Ana yazilar KUCULTULMEZ.)
-          const blokAdi = (bz ? bz.label : b.zone) + fazla;
-          for(const pt of [11.5, 11, 10.5, 10]){
-            ctx.font = '700 ' + pt + 'px ui-monospace, monospace';
-            if(ctx.measureText(blokAdi).width <= empColW - 8) break;
-          }
-          ctx.fillText(truncate(blokAdi, empColW-8), cx, rowTop + 88);
-        }
+        // Gorev degisimleri: HEPSI yazilir (en erken ustte); satirlar yukarida hesaplandi (blokSatirlari).
+        // Bolum adi (yardimci bilgi) sigmazsa en fazla 10 punto'ya kadar kuculur, ana yazilar KUCULTULMEZ.
+        blokSatirlariTablosu[r][i].forEach((l, k) => {
+          ctx.fillStyle = l.renk;
+          ctx.font = '700 ' + l.pt + 'px ui-monospace, monospace';
+          ctx.fillText(l.kisalt ? truncate(l.s, BLOK_MAXW) : l.s, cx, rowTop + BLOK_ILK_Y + k * BLOK_SATIR);
+        });
       } else {
         ctx.fillStyle = '#B7AE9C'; ctx.font = 'italic 14px system-ui, sans-serif';
         ctx.fillText('—', cx, midY);
@@ -194,7 +220,7 @@ function exportPng(){
 
     // satır alt çizgisi
     ctx.strokeStyle = '#D8CFBA'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(gridLeft, rowTop + rowH); ctx.lineTo(W - pad0, rowTop + rowH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gridLeft, rowTop + rh); ctx.lineTo(W - pad0, rowTop + rh); ctx.stroke();
   }
 
   // Personel sutunlari arasi ince ayiricilar — 16 sutun yan yana olunca
@@ -203,14 +229,14 @@ function exportPng(){
   for(let i = 1; i < emps.length; i++){
     ctx.beginPath();
     ctx.moveTo(colX(i), gridTop + headH);
-    ctx.lineTo(colX(i), gridTop + headH + 7*rowH);
+    ctx.lineTo(colX(i), gridTop + headH + gunlerToplami);
     ctx.stroke();
   }
 
   // dikey ayraçlar: gün sütunu sağı + sorumlu sütunu solu
   ctx.strokeStyle = '#262220'; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(gridLeft + dayColW, gridTop); ctx.lineTo(gridLeft + dayColW, gridTop + headH + 7*rowH); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(supX, gridTop); ctx.lineTo(supX, gridTop + headH + 7*rowH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(gridLeft + dayColW, gridTop); ctx.lineTo(gridLeft + dayColW, gridTop + headH + gunlerToplami); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(supX, gridTop); ctx.lineTo(supX, gridTop + headH + gunlerToplami); ctx.stroke();
 
   // indir
   const url = canvas.toDataURL('image/png');
